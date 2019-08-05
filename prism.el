@@ -196,6 +196,7 @@
 (cl-defun prism-set-faces (&key colors (num 16) shuffle (attribute prism-color-attribute)
                                 (desaturations prism-desaturations) (lightens prism-lightens))
   "Set NUM `prism' faces according to COLORS."
+  (declare (indent defun))
   (when shuffle
     (setf colors (prism-shuffle colors)))
   (setf colors (-cycle colors))
@@ -217,15 +218,12 @@ Modifies COLORS according to DESATURATIONS and LIGHTENS."
   (cl-flet ((modify-color (color desaturate lighten)
                           (--> color
                                (color-desaturate-name it desaturate)
-                               (color-lighten-name it lighten)))
-            (choose (choices num-items i)
-                    (let* ((num-choices (1- (length choices)))
-                           (steps (/ num-items num-choices))
-                           (choice (/ i steps)))
-                      (nth choice choices))))
-    (cl-loop for i from 1 to num
-             for desaturate = (choose desaturations num i)
-             for lighten = (choose lightens num i)
+                               (color-lighten-name it lighten))))
+    (setf desaturations (prism-expand-list num desaturations)
+          lightens (prism-expand-list num lightens))
+    (cl-loop for i from 0 below num
+             for desaturate = (nth i desaturations)
+             for lighten = (nth i lightens)
              collect (modify-color (nth i colors) desaturate lighten))))
 
 (defun prism-shuffle (seq)
@@ -235,6 +233,23 @@ Copied from `elfeed-shuffle'."
     (prog1 seq                  ; don't use dotimes result (bug#16206)
       (dotimes (i n)
         (cl-rotatef (elt seq i) (elt seq (+ i (cl-random (- n i)))))))))
+
+(defun prism-expand-list (new-length list)
+  "Return LIST expanded to NEW-LENGTH.
+Each element of LIST is repeated an equal number of times, except
+that the last element may be repeated an extra time when
+necessary."
+  (let* ((length (length list))
+         (_longer-p (or (> new-length length)
+                        (user-error "NEW-LENGTH must be longer than LIST")))
+         (repeat-n (/ new-length length))
+         (final-element-p (not (zerop (mod new-length length))))
+         (new-list (->> list
+                        (--map (-repeat repeat-n it))
+                        (-flatten))))
+    (if final-element-p
+        (-snoc new-list (-last-item list))
+      new-list)))
 
 ;;;; Minor mode
 
