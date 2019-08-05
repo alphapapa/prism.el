@@ -195,7 +195,11 @@
 
 (cl-defun prism-set-faces (&key colors (num 16) shuffle (attribute prism-color-attribute)
                                 (desaturations prism-desaturations) (lightens prism-lightens))
-  "Set NUM `prism' faces according to COLORS."
+  ;; FIXME: Docstring.
+  "Set NUM `prism' faces according to COLORS.
+COLORS is a list of one or more color name strings (like
+\"green\" or \"#ff0000\") or face symbols (of which the
+foreground color is used)."
   (declare (indent defun))
   (when shuffle
     (setf colors (prism-shuffle colors)))
