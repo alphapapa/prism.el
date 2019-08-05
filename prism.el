@@ -52,10 +52,6 @@
   "FIXME: Docstring.")
 
 (defcustom prism-match-end (lambda (&rest _ignore)
-                             (forward-char 1)
-                             (point))
-  "FIXME: Docstring.")
-(defcustom prism-match-end (lambda (&rest _ignore)
                              (cond ((looking-at-p (rx (or "(" ")")))
                                     (forward-char 1)
                                     (point))
