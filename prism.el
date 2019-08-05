@@ -212,8 +212,11 @@
 
 ;;;;; Colors
 
-(cl-defun prism-set-colors (&key colors (num 16))
+(cl-defun prism-set-colors (&key colors (num 16) shuffle)
   "Set NUM `prism' faces according to COLORS."
+  (when shuffle
+    (setf colors (prism-shuffle colors)))
+  (setf colors (-cycle colors))
   (cl-loop with colors = (prism-modify-colors :colors colors :num num)
            for i from 1 to num
            for face = (intern (format "prism-face-%d" i))
@@ -237,9 +240,6 @@ Modifies COLORS according to DESATURATIONS and LIGHTENS."
                            (steps (/ num-items num-choices))
                            (choice (/ i steps)))
                       (nth choice choices))))
-    (setf colors (-cycle colors))
-    (when shuffle
-      (setf colors (prism-shuffle colors)))
     (cl-loop for i from 1 to num
              for desaturate = (choose desaturations num i)
              for lighten = (choose lightens num i)
