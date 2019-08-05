@@ -62,6 +62,22 @@
                                         (point)))))
   "FIXME: Docstring.")
 
+(defcustom prism-match-start
+  ;; NOTE: Not currently used, but not removing yet.
+  (lambda (&rest _ignore)
+    (while (and (looking-at-p (rx (or space eol)))
+                (not (eobp)))
+      (forward-whitespace 1))
+    (when (looking-at-p (rx (syntax string-quote)))
+      (forward-char 1))
+    (while (or (nth 4 (syntax-ppss))
+               (save-excursion
+                 (forward-char 1)
+                 (nth 4 (syntax-ppss))))
+      (forward-line 1))
+    (point))
+  "FIXME: Docstring.")
+
 ;;;; Commands
 
 
@@ -94,50 +110,17 @@
                      (cons 'font-lock-beg font-lock-beg)
                      (cons 'font-lock-end font-lock-end))))
 
-(defun prism-match (limit)
-  ;; FIXME: Docstring.
-  ""
-  (prism-debug (list (cons 'match 1)
-                     (cons 'point (point))
-                     (cons 'limit limit)))
-  (cond ((looking-at-p (rx (or space eol))) (while (and (looking-at-p (rx (or space eol)))
-                                                        (not (eobp)))
-                                              (forward-whitespace 1)))
-        ((looking-at-p (rx (or ")" (syntax string-quote)))) nil)
-        )
-  (-let* ((start (point))
-          ((depth _start-of-innermost-list _start-of-last-complete-sexp-terminated
-                  in-string-p comment-level-p _following-quote-p
-                  _min-paren-depth _comment-style _comment-or-string-start
-                  _open-parens-list _two-char-construct-syntax . _rest)
-           (syntax-ppss))
-          (looking-at-closing-paren-p (looking-at-p (rx ")")))
-          (end (if (looking-at-p (rx (or "(" ")" (syntax string-quote))))
-                   (progn
-                     (forward-char 1)
-                     (point))
-                 (ignore-errors
-                   (forward-symbol 1)
-                   (point)))))
-    (prism-debug (list (cons 'match 2)
-                       (cons 'point (point))
-                       (cons 'limit limit)
-                       (cons 'end end)
-                       (cons 'depth depth)
-                       (cons 'in-string-p in-string-p)
-                       (cons 'comment-level-p comment-level-p)
-                       (cons 'string (buffer-substring-no-properties start end))))
-    (if (not (= start end))
-        (if (not (or in-string-p comment-level-p))
-            (progn
-              (when looking-at-closing-paren-p
-                (cl-decf depth))
-              (set-match-data (list start end (current-buffer)))
-              (setf prism-face (intern (concat "prism-face-" (number-to-string depth)))))
-          (setf prism-face nil)
-          t)
-      (prism-debug "Start = end")
-      nil)))
+(defsubst prism-skip ()
+  (while (cond ((eobp) nil)
+               ((eolp)
+                (forward-line 1))
+               ((looking-at-p (rx (syntax comment-start)))
+                (forward-line 1))
+               ((looking-at-p (rx space))
+                (when (re-search-forward (rx (not space)) nil t)
+                  (goto-char (match-beginning 0))))
+               ((nth 4 (syntax-ppss))
+                (forward-line 1)))))
 
 (defun prism-match (limit)
   ;; FIXME: Docstring.
@@ -145,17 +128,16 @@
   (prism-debug (list (cons 'match 1)
                      (cons 'point (point))
                      (cons 'limit limit)))
-  (cond ((looking-at-p (rx (or space eol))) (while (and (looking-at-p (rx (or space eol)))
-                                                        (not (eobp)))
-                                              (forward-whitespace 1)))
-        ((looking-at-p (rx (or ")" (syntax string-quote)))) nil)
-        )
+  (prism-skip)
   (-let* ((start (point))
           ((depth _start-of-innermost-list _start-of-last-complete-sexp-terminated
                   in-string-p comment-level-p _following-quote-p
                   _min-paren-depth _comment-style _comment-or-string-start
                   _open-parens-list _two-char-construct-syntax . _rest)
            (syntax-ppss))
+          (at-comment-p (or (looking-at-p (rx (syntax comment-start)))
+                            comment-level-p))
+          (looking-at-closing-paren-p (looking-at-p (rx ")")))
           (end (funcall prism-match-end)))
     (prism-debug (list (cons 'match 2)
                        (cons 'point (point))
@@ -165,15 +147,21 @@
                        (cons 'in-string-p in-string-p)
                        (cons 'comment-level-p comment-level-p)
                        (cons 'string (buffer-substring-no-properties start end))))
-    (if (not (= start end))
-        (if (not (or in-string-p comment-level-p))
-            (progn
-              (set-match-data (list start end (current-buffer)))
-              (setf prism-face (intern (concat "prism-face-" (number-to-string depth)))))
-          (setf prism-face nil)
-          t)
-      (prism-debug "Start = end")
-      nil)))
+    ;; NOTE: Always return non-nil unless at eobp, basically.
+    (cond ((eobp) nil)
+          (in-string-p
+           (setf prism-face nil)
+           (re-search-forward (rx (syntax string-delimiter)) nil t)
+           (forward-char 1)
+           t)
+          (at-comment-p
+           (setf prism-face nil)
+           (forward-line 1)
+           t)
+          (t (when looking-at-closing-paren-p
+               (cl-decf depth))
+             (set-match-data (list start end (current-buffer)))
+             (setf prism-face (intern (concat "prism-face-" (number-to-string depth))))))))
 
 (defun prism-debug (obj)
   (with-current-buffer (prism-debug-buffer)
