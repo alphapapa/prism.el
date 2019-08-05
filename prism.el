@@ -252,7 +252,9 @@ necessary."
   (let* ((length (length list))
          (_longer-p (or (> new-length length)
                         (user-error "NEW-LENGTH must be longer than LIST")))
-         (repeat-n (/ new-length length))
+         (repeat-n (/ new-length (if (zerop (mod new-length length))
+                                     length
+                                   (1- length))))
          (final-element-p (not (zerop (mod new-length length))))
          (new-list (->> list
                         (--map (-repeat repeat-n it))
