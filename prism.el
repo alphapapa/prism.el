@@ -65,15 +65,6 @@
                                  (point)))
                              (point))
   "FIXME: Docstring.")
-(defcustom prism-match-end (lambda (&rest _ignore)
-                             (cond ((looking-at-p (rx (or "(" ")" (syntax string-quote))))
-                                    (forward-char 1)
-                                    (point))
-                                   (t (ignore-errors
-                                        (forward-symbol 1)
-                                        (point))))
-                             (point))
-  "FIXME: Docstring.")
 
 ;;;; Commands
 
