@@ -214,9 +214,9 @@
     (setf colors (prism-shuffle colors)))
   (setf colors (-cycle colors))
   (cl-loop with colors = (prism-modify-colors :colors colors :num num)
-           for i from 1 to num
+           for i from 0 upto num
            for face = (intern (format "prism-face-%d" i))
-           for color = (nth (1+ i) colors)
+           for color = (nth i colors)
            unless (internal-lisp-face-p face)
            do (custom-declare-face face '((t)) (format "`prism' face #%d" i))
            do (set-face-attribute face nil :foreground color))
