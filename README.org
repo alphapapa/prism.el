@@ -22,6 +22,9 @@ It's easy to adjust the colors with ~prism-set-faces~.  Here are some examples:
 [[images/3.png]]
 [[images/4.png]]
 [[images/5.png]]
+
+You can shuffle the order of the colors until you find a pattern you like:
+
 [[images/shuffled.png]]
 
 You can use just a few faces in combination with the =desaturations= and =lightens= to create a palette of colors:
@@ -32,8 +35,9 @@ You can use just a few faces in combination with the =desaturations= and =lighte
 Or even a single color:
 
 [[images/1-color.png]]
+[[images/1-color-reversed.png]]
 
-You can even set the background color instead:
+You can even set the background color instead (similar to [[https://github.com/seanirby/rainbow-blocks-bg][rainbow-blocks-bg]], but not optimized for this case yet):
 
 [[images/background.png]]
 

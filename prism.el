@@ -200,8 +200,8 @@
   (when shuffle
     (setf colors (prism-shuffle colors)))
   (setf colors (->> colors
-                    (--map (cl-typecase it
-                             (face (face-attribute it :foreground))
+                    (--map (cl-etypecase it
+                             (face (face-attribute it :foreground nil 'inherit))
                              (string it)))
                     -cycle
                     (prism-modify-colors :num num :desaturations desaturations :lightens lightens
@@ -223,8 +223,10 @@ Modifies COLORS according to DESATURATIONS and LIGHTENS."
                           (--> color
                                (color-desaturate-name it desaturate)
                                (color-lighten-name it lighten))))
-    (setf desaturations (prism-expand-list num desaturations)
-          lightens (prism-expand-list num lightens))
+    (when (< (length desaturations) num)
+      (setf desaturations (prism-expand-list num desaturations)))
+    (when (< (length lightens) num)
+      (setf lightens (prism-expand-list num lightens)))
     (cl-loop for i from 0 below num
              for desaturate = (nth i desaturations)
              for lighten = (nth i lightens)
