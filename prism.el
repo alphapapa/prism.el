@@ -61,11 +61,9 @@
                                     (point))
                                    ((looking-at-p (rx (syntax string-quote)))
                                     (point))
-                                   (t
-                                    (ignore-errors
-                                      (forward-symbol 1)
-                                      (point))))
-                             (point))
+                                   (t (ignore-errors
+                                        (forward-symbol 1)
+                                        (point)))))
   "FIXME: Docstring.")
 
 ;;;; Commands
