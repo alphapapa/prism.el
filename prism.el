@@ -199,10 +199,14 @@
   (declare (indent defun))
   (when shuffle
     (setf colors (prism-shuffle colors)))
-  (setf colors (-cycle colors))
-  (cl-loop with colors = (prism-modify-colors :colors colors :num num
-                                              :desaturations desaturations :lightens lightens)
-           for i from 0 upto num
+  (setf colors (->> colors
+                    (--map (cl-typecase it
+                             (face (face-attribute it :foreground))
+                             (string it)))
+                    -cycle
+                    (prism-modify-colors :num num :desaturations desaturations :lightens lightens
+                                         :colors)))
+  (cl-loop for i from 0 upto num
            for face = (intern (format "prism-face-%d" i))
            for color = (nth i colors)
            when (internal-lisp-face-p face)
