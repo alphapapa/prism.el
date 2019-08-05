@@ -1,0 +1,108 @@
+#+TITLE: prism.el
+
+#+PROPERTY: LOGGING nil
+
+# Note: This readme works with the org-make-toc <https://github.com/alphapapa/org-make-toc> package, which automatically updates the table of contents.
+
+# [[https://melpa.org/#/package-name][file:https://melpa.org/packages/prism-badge.svg]] [[https://stable.melpa.org/#/package-name][file:https://stable.melpa.org/packages/prism-badge.svg]]
+
+=prism= disperses Lisp forms into a spectrum of colors by depth.  It adds rather than replaces fontification, so it doesn't override non-color face attributes, such as bold, italic, etc.
+
+*Note:* This package is in prototype stages.  Beware of bugs.
+
+* Screenshots
+:PROPERTIES:
+:TOC:      ignore
+:END:
+
+It's easy to adjust the colors with ~prism-set-faces~.  Here are some examples:
+
+[[images/1.png]]
+[[images/2.png]]
+[[images/3.png]]
+[[images/4.png]]
+[[images/5.png]]
+[[images/shuffled.png]]
+
+You can even set the background color instead:
+
+[[images/background.png]]
+
+* Contents                                                         :noexport:
+:PROPERTIES:
+:TOC:      this
+:END:
+  -  [[#comparisons][Comparisons]]
+  -  [[#installation][Installation]]
+  -  [[#usage][Usage]]
+  -  [[#changelog][Changelog]]
+  -  [[#credits][Credits]]
+
+* Comparisons
+
+=prism= is much like [[https://github.com/istib/rainbow-blocks][rainbow-blocks]], but it differs in a few ways:
+
++  =prism= adds to the ~face~ text property, which respects existing fontification, while =rainbow-blocks= sets the ~font-lock-face~ text property, which overrides existing fontification.  This means that =prism= is compatible with packages like [[https://github.com/alphapapa/highlight-function-calls][highlight-function-calls]] and [[https://github.com/Fanael/highlight-quoted][highlight-quoted]].
++  =prism= uses ~font-lock-add-keywords~, while =rainbow-blocks= uses ~jit-lock-register~.  Which is better?  Good question.  Hopefully, the former...
++  =prism= highlights parens with the color of the outer list's symbols, which helps parens stand out from symbols.  This is a matter of preference, of course, and an option may be added to configure this in the future.
+
+* Installation
+:PROPERTIES:
+:TOC:      0
+:END:
+
+The easiest way is to use [[https://framagit.org/steckerhalter/quelpa-use-package][quelpa-use-package]] like this:
+
+#+BEGIN_SRC elisp
+  (use-package prism
+    :quelpa (prism :fetcher github :repo "alphapapa/prism.el"))
+#+END_SRC
+
+* Usage
+:PROPERTIES:
+:TOC:      0
+:END:
+
+Run command ~prism-mode~ to enable it in the current buffer.
+
+* Changelog
+:PROPERTIES:
+:TOC:      0
+:END:
+
+** 0.1-pre
+
+Early prototype stages.
+
+* Credits
+
+Inspired by [[https://github.com/istib/rainbow-blocks][rainbow-blocks]], [[https://github.com/Fanael/rainbow-identifiers][rainbow-identifiers]], and [[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]].
+
+* Development
+:PROPERTIES:
+:TOC:      ignore
+:END:
+
+Bug reports, feature requests, suggestions — /oh my/!
+
+In the event that a bug in the font-locking functions cause Emacs to enter an infinite loop, you can stop it without killing Emacs by following these steps:
+
+1.  From a shell, run ~pkill -SIGUSR2 emacs~.  Usually once is enough, but not always.
+2.  After Emacs displays a backtrace, switch to the buffer where ~prism-mode~ was enabled and call ~prism-mode~ again to disable it.
+3.  Please report the backtrace to the issue tracker so it can be fixed.  Include contents of the buffer when possible.
+
+* License
+:PROPERTIES:
+:TOC:      ignore
+:END:
+
+GPLv3
+
+# Local Variables:
+# eval: (require 'org-make-toc)
+# before-save-hook: org-make-toc
+# org-export-with-properties: ()
+# org-export-with-title: t
+# End:
+
+

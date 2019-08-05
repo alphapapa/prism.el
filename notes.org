@@ -1,55 +1,78 @@
 
+* Samples
+
+#+BEGIN_SRC elisp
+  (defun highlight-function-calls--matcher (end)
+    "The matcher function to be used by font lock mode."
+    (setq end (save-excursion (forward-symbol 1) (point)))
+    (catch 'highlight-function-calls--matcher
+      (when (not (nth 5 (syntax-ppss)))
+        (while (re-search-forward (rx symbol-start (*? any) symbol-end) end t)
+          (let ((match (intern-soft (match-string 0))))
+            (when (and (or (functionp match)
+                           (when highlight-function-calls-macro-calls
+                             (macrop match))
+                           (when highlight-function-calls-special-forms
+                             (special-form-p match)))
+                       (not (member match highlight-function-calls-exclude-symbols)))
+              (goto-char (match-end 0))
+              (setq highlight-function-calls--face-name
+                    (pcase match
+                      ((and (or 'not 'null) (guard highlight-function-calls-not)) 'highlight-function-calls--not-face)
+                      (_ 'highlight-function-calls-face)))
+              (throw 'highlight-function-calls--matcher t)))))
+      nil))
+
+  ;; red1 is applied to only the first opening paren.
+  (orange1 (yellow1 (green1 (blue1 (cyan1 (violet1 (magenta1 (red2
+  (orange2 (yellow2 (green2 (blue2 (cyan2 (violet2 (magenta2 (red3 
+  (orange3 (yellow3 (green3 (blue3 (cyan3 (violet3 (magenta3)))))))))))))))))))))))
+#+END_SRC
+
 * Code
 
 ** Scratch
 
 #+BEGIN_SRC elisp
-  (solarized-with-color-variables 'dark
-    (prism-set-faces :colors (elfeed--shuffle (list red orange yellow green blue cyan violet magenta))
-                     :num 16))
-  (solarized-with-color-variables 'dark
-    (prism-set-faces :colors (-cycle (list red orange yellow green blue cyan violet magenta))
-                     :num 16))
-  (solarized-with-color-variables 'dark
-    (prism-set-faces :colors (list red orange yellow green blue cyan violet magenta)
-                     :num 16 :shuffle t))
-  (solarized-with-color-variables 'dark
-    (prism-set-faces :colors (list red orange yellow green blue cyan violet magenta)
-                     :num 16 :attribute :background
+    (prism-set-faces :colors (solarized-with-color-variables 'dark
+                               (list red orange yellow green blue cyan violet magenta))
+                     :num 24)
 
-                     :lightens (list -10 -20 -30)))
-  (solarized-with-color-variables 'dark
-    (prism-set-faces :colors (--map (solarized-color-blend it (face-attribute 'default :background) 50)
-                                    (list red orange yellow green blue cyan violet magenta))
-                     :num 16 :attribute :background))
-  (prism-set-faces :colors (solarized-with-color-variables 'dark
-                             (--map (solarized-color-blend it (face-attribute 'default :background) .15)
-                                    (list red orange yellow green blue cyan violet magenta)))
-                   :desaturations (list 5 10 15) :lightens (list 5 10 15)
-                   :num 16 :attribute :background)
-  (solarized-with-color-variables 'dark
-    (list red orange yellow green blue cyan violet magenta))
-  (solarized-with-color-variables 'dark
+  (prism-set-faces :num 24
+    :desaturations '(0 5 10) :lightens '(30 40 50)
+    :colors (solarized-with-color-variables 'dark
+              (list red orange yellow green blue cyan violet magenta)))
+
+
+    (prism-set-faces :colors (solarized-with-color-variables 'dark
+                               (list red orange yellow green blue cyan violet magenta))
+                     :num 24 :shuffle t)
+
+    (prism-set-faces :colors (solarized-with-color-variables 'dark
+                               (list red orange yellow green blue cyan violet magenta))
+                     :num 24 :lightens (list -10 -20 -30))
+
+    (prism-set-faces :colors (solarized-with-color-variables 'dark
+                               (--map (solarized-color-blend it (face-attribute 'default :background) 50)
+                                      (list red orange yellow green blue cyan violet magenta)))
+                     :num 24 :attribute :background)
+
+    (prism-set-faces :colors (solarized-with-color-variables 'dark
+                               (--map (solarized-color-blend it (face-attribute 'default :background) .15)
+                                      (list red orange yellow green blue cyan violet magenta)))
+                     :desaturations (list 5 10 15) :lightens (list 5 10 15)
+                     :num 24 :attribute :background)
+
     (prism-set-faces :colors (weird-sort (-sort (-on #'< (lambda (color)
-                                                           (->> color
-                                                                color-name-to-rgb
-                                                                (apply #'color-rgb-to-hsl)
-                                                                car)))
-                                                (list red orange yellow green blue cyan violet magenta)))
-                     :num 16))
-  (solarized-with-color-variables 'dark
-    (prism-set-faces :colors (-sort (-on #'< (lambda (color)
-                                               (->> color
-                                                    color-name-to-rgb
-                                                    (apply #'color-rgb-to-hsl)
-                                                    car)))
-                                    (list red orange yellow green blue cyan violet magenta))
-                     :num 16))
+                                                           (->> color color-name-to-rgb (apply #'color-rgb-to-hsl) car)))
+                                                (solarized-with-color-variables 'dark
+                                                  (list red orange yellow green blue cyan violet magenta))))
+                     :num 24)
 
-  (defun weird-sort (list)
-    (-let* (((a b) (-split-at (/ (length list) 2) list))
-            (b (nreverse b)))
-      (-interleave a b)))
+    (defun weird-sort (list)
+      (-let* (((a b) (-split-at (/ (length list) 2) list))
+              (b (nreverse b)))
+        (-interleave a b)))
 
-  (weird-sort '( 1 2 3 4 5 6 7 8)) ;;=> (1 8 2 7 3 6 4 5)
+    (weird-sort '( 1 2 3 4 5 6 7 8)) ;;=> (1 8 2 7 3 6 4 5)
 #+END_SRC
