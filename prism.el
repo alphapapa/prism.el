@@ -56,13 +56,15 @@
                              (point))
   "FIXME: Docstring.")
 (defcustom prism-match-end (lambda (&rest _ignore)
-                             (if (looking-at-p (rx (or "(" ")" (syntax string-quote))))
-                                 (progn
-                                   (forward-char 1)
-                                   (point))
-                               (ignore-errors
-                                 (forward-symbol 1)
-                                 (point)))
+                             (cond ((looking-at-p (rx (or "(" ")")))
+                                    (forward-char 1)
+                                    (point))
+                                   ((looking-at-p (rx (syntax string-quote)))
+                                    (point))
+                                   (t
+                                    (ignore-errors
+                                      (forward-symbol 1)
+                                      (point))))
                              (point))
   "FIXME: Docstring.")
 
@@ -115,6 +117,7 @@
                   _min-paren-depth _comment-style _comment-or-string-start
                   _open-parens-list _two-char-construct-syntax . _rest)
            (syntax-ppss))
+          (looking-at-closing-paren-p (looking-at-p (rx ")")))
           (end (if (looking-at-p (rx (or "(" ")" (syntax string-quote))))
                    (progn
                      (forward-char 1)
@@ -133,6 +136,8 @@
     (if (not (= start end))
         (if (not (or in-string-p comment-level-p))
             (progn
+              (when looking-at-closing-paren-p
+                (cl-decf depth))
               (set-match-data (list start end (current-buffer)))
               (setf prism-face (intern (concat "prism-face-" (number-to-string depth)))))
           (setf prism-face nil)
