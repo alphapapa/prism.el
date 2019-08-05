@@ -45,6 +45,9 @@
 (defgroup prism nil
   "FIXME: Docstring.")
 
+(defcustom prism-color-attribute :foreground
+  "FIXME: Docstring.")
+
 (defcustom prism-desaturations '(40 50 60)
   "FIXME: Docstring.")
 
@@ -190,22 +193,24 @@
 
 ;;;;; Colors
 
-(cl-defun prism-set-colors (&key colors (num 16) shuffle)
+(cl-defun prism-set-faces (&key colors (num 16) shuffle (attribute prism-color-attribute)
+                                (desaturations prism-desaturations) (lightens prism-lightens))
   "Set NUM `prism' faces according to COLORS."
   (when shuffle
     (setf colors (prism-shuffle colors)))
   (setf colors (-cycle colors))
-  (cl-loop with colors = (prism-modify-colors :colors colors :num num)
+  (cl-loop with colors = (prism-modify-colors :colors colors :num num
+                                              :desaturations desaturations :lightens lightens)
            for i from 0 upto num
            for face = (intern (format "prism-face-%d" i))
            for color = (nth i colors)
-           unless (internal-lisp-face-p face)
+           when (internal-lisp-face-p face)
+           do (face-spec-set face nil 'customized-face)
            do (custom-declare-face face '((t)) (format "`prism' face #%d" i))
-           do (set-face-attribute face nil :foreground color))
+           do (set-face-attribute face nil attribute color))
   (setf prism-num-faces num))
 
-(cl-defun prism-modify-colors (&key num (desaturations prism-desaturations) (lightens prism-lightens)
-                                    colors shuffle &allow-other-keys)
+(cl-defun prism-modify-colors (&key num colors desaturations lightens &allow-other-keys)
   ;; FIXME: Docstring.
   "Return list of NUM colors for use in `rainbow-identifiers', `rainbow-blocks', etc.
 Modifies COLORS according to DESATURATIONS and LIGHTENS."
@@ -242,7 +247,7 @@ Copied from `elfeed-shuffle'."
         (progn
           (unless (facep 'prism-face-1)
             (prism-mode -1)
-            (user-error "Please set `prism' colors with `prism-set-colors'"))
+            (user-error "Please set `prism' colors with `prism-set-faces'"))
           (with-current-buffer (prism-debug-buffer)
             (erase-buffer))
           (font-lock-add-keywords nil keywords 'append)
