@@ -24,6 +24,15 @@ It's easy to adjust the colors with ~prism-set-faces~.  Here are some examples:
 [[images/5.png]]
 [[images/shuffled.png]]
 
+You can use just a few faces in combination with the =desaturations= and =lightens= to create a palette of colors:
+
+[[images/2-faces.png]]
+[[images/4-faces.png]]
+
+Or even a single color:
+
+[[images/1-color.png]]
+
 You can even set the background color instead:
 
 [[images/background.png]]
@@ -63,7 +72,8 @@ The easiest way is to use [[https://framagit.org/steckerhalter/quelpa-use-packag
 :TOC:      0
 :END:
 
-Run command ~prism-mode~ to enable it in the current buffer.
+1.  Use function ~prism-set-faces~ to set colors according to your preferences.
+2.  Run command ~prism-mode~ to enable it in the current buffer.
 
 * Changelog
 :PROPERTIES:
