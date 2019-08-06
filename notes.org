@@ -31,12 +31,12 @@
 
 * Code
 
-** Scratch
+** Theme-setting
 
 #+BEGIN_SRC elisp
-    (prism-set-faces :colors (solarized-with-color-variables 'dark
-                               (list red orange yellow green blue cyan violet magenta))
-                     :num 24)
+  (prism-set-faces :colors (solarized-with-color-variables 'dark
+                             (list red orange yellow green blue cyan violet magenta))
+    :num 24)
 
   (prism-set-faces :num 24
     :desaturations '(0 5 10) :lightens '(30 40 50)
@@ -44,37 +44,44 @@
               (list red orange yellow green blue cyan violet magenta)))
 
 
-    (prism-set-faces :colors (solarized-with-color-variables 'dark
-                               (list red orange yellow green blue cyan violet magenta))
-                     :num 24 :shuffle t)
+  (prism-set-faces :colors (solarized-with-color-variables 'dark
+                             (list red orange yellow green blue cyan violet magenta))
+    :num 24 :shuffle t)
 
-    (prism-set-faces :colors (solarized-with-color-variables 'dark
-                               (list red orange yellow green blue cyan violet magenta))
-                     :num 24 :lightens (list -10 -20 -30))
+  (prism-set-faces :colors (solarized-with-color-variables 'dark
+                             (list red orange yellow green blue cyan violet magenta))
+    :num 24 :lightens (list -10 -20 -30))
 
-    (prism-set-faces :colors (solarized-with-color-variables 'dark
-                               (--map (solarized-color-blend it (face-attribute 'default :background) 50)
-                                      (list red orange yellow green blue cyan violet magenta)))
-                     :num 24 :attribute :background)
+  (prism-set-faces :colors (solarized-with-color-variables 'dark
+                             (--map (solarized-color-blend it (face-attribute 'default :background) 50)
+                                    (list red orange yellow green blue cyan violet magenta)))
+    :num 24 :attribute :background)
 
-    (prism-set-faces :colors (solarized-with-color-variables 'dark
-                               (--map (solarized-color-blend it (face-attribute 'default :background) .15)
-                                      (list red orange yellow green blue cyan violet magenta)))
-                     :desaturations (list 5 10 15) :lightens (list 5 10 15)
-                     :num 24 :attribute :background)
+  (prism-set-faces :colors (solarized-with-color-variables 'dark
+                             (--map (solarized-color-blend it (face-attribute 'default :background) .15)
+                                    (list red orange yellow green blue cyan violet magenta)))
+    :desaturations (list 5 10 15) :lightens (list 5 10 15)
+    :num 24 :attribute :background)
 
-    (prism-set-faces :colors (weird-sort (-sort (-on #'< (lambda (color)
-                                                           (->> color color-name-to-rgb (apply #'color-rgb-to-hsl) car)))
-                                                (solarized-with-color-variables 'dark
-                                                  (list red orange yellow green blue cyan violet magenta))))
-                     :num 24)
+  (prism-set-faces :colors (weird-sort (-sort (-on #'< (lambda (color)
+                                                         (->> color color-name-to-rgb (apply #'color-rgb-to-hsl) car)))
+                                              (solarized-with-color-variables 'dark
+                                                (list red orange yellow green blue cyan violet magenta))))
+    :num 24)
 
-    (defun weird-sort (list)
-      (-let* (((a b) (-split-at (/ (length list) 2) list))
-              (b (nreverse b)))
-        (-interleave a b)))
+  (prism-set-faces :num 16
+    :desaturations (cl-loop for i from 0 below 16
+                            collect (* i 3))
+    :lightens (cl-loop for i from 0 below 16
+                       collect (* 3 i))
+    :colors (list "red" "white" "dodgerblue" "white"))
 
-    (weird-sort '( 1 2 3 4 5 6 7 8)) ;;=> (1 8 2 7 3 6 4 5)
+  (defun weird-sort (list)
+    (-let* (((a b) (-split-at (/ (length list) 2) list))
+            (b (nreverse b)))
+      (-interleave a b)))
+
+  (weird-sort '( 1 2 3 4 5 6 7 8)) ;;=> (1 8 2 7 3 6 4 5)
 #+END_SRC
 
 * Profiling
