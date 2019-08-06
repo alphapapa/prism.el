@@ -180,16 +180,17 @@
                                                unless (or (not (facep face))
                                                           (string-prefix-p "prism-face-" (symbol-name face)))
                                                collect face)))
-    (save-excursion
-      (goto-char beg)
-      (cl-loop for end = (or (next-single-property-change (point) 'face) (point-max))
-               for faces = (get-text-property (point) 'face)
-               when faces
-               do (put-text-property (point) end 'face (without-prism-faces faces))
-               for next-change = (next-single-property-change (point) 'face)
-               while (and next-change
-                          (/= next-change (point-max)))
-               do (goto-char next-change)))))
+    (with-silent-modifications
+      (save-excursion
+        (goto-char beg)
+        (cl-loop for end = (or (next-single-property-change (point) 'face) (point-max))
+                 for faces = (get-text-property (point) 'face)
+                 when faces
+                 do (put-text-property (point) end 'face (without-prism-faces faces))
+                 for next-change = (next-single-property-change (point) 'face)
+                 while (and next-change
+                            (/= next-change (point-max)))
+                 do (goto-char next-change))))))
 
 ;;;;; Colors
 
