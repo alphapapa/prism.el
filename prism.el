@@ -43,6 +43,8 @@
 (defvar prism-face nil
   "Set by `prism-match' during fontification.")
 
+(defvar prism-debug nil)
+
 ;;;; Customization
 
 (defgroup prism nil
@@ -170,10 +172,11 @@
              (setf prism-face (alist-get depth prism-faces))))))
 
 (defun prism-debug (obj)
-  (with-current-buffer (prism-debug-buffer)
-    (save-excursion
-      (goto-char (point-max))
-      (print obj (current-buffer)))))
+  (when prism-debug
+    (with-current-buffer (prism-debug-buffer)
+      (save-excursion
+        (goto-char (point-max))
+        (print obj (current-buffer))))))
 
 (cl-defun prism-remove-faces (&optional (beg (point-min)))
   ;; FIXME: Docstring.
