@@ -38,7 +38,7 @@
   )
 
 (defvar prism-face nil
-  "Set by `prism-matcher' during fontification.")
+  "Set by `prism-match' during fontification.")
 
 ;;;; Customization
 
