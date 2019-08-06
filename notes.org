@@ -76,3 +76,33 @@
 
     (weird-sort '( 1 2 3 4 5 6 7 8)) ;;=> (1 8 2 7 3 6 4 5)
 #+END_SRC
+
+* Profiling
+
+** concat, intern vs. lookup
+
+#+BEGIN_SRC elisp
+  (let* ((prism-faces-alist (cl-loop for i from 0 below 24
+                                     for face = (intern (concat "prism-level-" (number-to-string i)))
+                                     collect (cons i face)))
+         (prism-faces-ht (cl-loop with ht = (ht)
+                                  for i from 0 below 24
+                                  for face = (intern (concat "prism-level-" (number-to-string i)))
+                                  do (ht-set ht i face)
+                                  finally return ht)))
+    (bench-multi-lexical :times 100 :ensure-equal t
+      :forms (("concat, intern" (cl-loop for i from 0 below 24
+                                         for face = (intern (concat "prism-level-" (number-to-string i)))
+                                         collect face))
+              ("alist lookup" (cl-loop for i from 0 below 24
+                                       collect (alist-get i prism-faces-alist)))
+              ("ht lookup" (cl-loop for i from 0 below 24
+                                    collect (ht-get prism-faces-ht i))))))
+#+END_SRC
+
+#+RESULTS:
+| Form           | x faster than next | Total runtime | # of GCs | Total GC runtime |
+|----------------+--------------------+---------------+----------+------------------|
+| alist lookup   |               1.26 |      0.000570 |        0 |                0 |
+| ht lookup      |               1.77 |      0.000717 |        0 |                0 |
+| concat, intern |            slowest |      0.001268 |        0 |                0 |
