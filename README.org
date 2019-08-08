@@ -15,17 +15,7 @@
 :TOC:      ignore
 :END:
 
-It's easy to adjust the colors with ~prism-set-faces~.  Here are some examples:
-
-[[images/1.png]]
-[[images/2.png]]
-[[images/3.png]]
-[[images/4.png]]
-[[images/5.png]]
-
-You can shuffle the order of the colors until you find a pattern you like:
-
-[[images/shuffled.png]]
+It's easy to adjust the colors with ~prism-set-faces~.  Here are some examples.
 
 You can use just a few faces in combination with the =desaturations= and =lightens= to create a palette of colors:
 
@@ -36,6 +26,18 @@ Or even a single color:
 
 [[images/1-color.png]]
 [[images/1-color-reversed.png]]
+
+If you use [[https://github.com/bbatsov/solarized-emacs][solarized-theme]], you can use ~solarized-with-color-variables~ to get colors from the theme:
+
+[[images/1.png]]
+[[images/2.png]]
+[[images/3.png]]
+[[images/4.png]]
+[[images/5.png]]
+
+You can shuffle the order of the colors until you find a pattern you like:
+
+[[images/shuffled.png]]
 
 You can even set the background color instead (similar to [[https://github.com/seanirby/rainbow-blocks-bg][rainbow-blocks-bg]], but not optimized for this case yet):
 
@@ -76,7 +78,7 @@ The easiest way is to use [[https://framagit.org/steckerhalter/quelpa-use-packag
 :TOC:      0
 :END:
 
-1.  Use function ~prism-set-faces~ to set colors according to your preferences.
+1.  Use function ~prism-set-faces~ to set colors according to your preferences.  The ~:colors~ argument should be a list of color strings (i.e. color names or RGB hex values) or faces (for which their foreground color is used).
 2.  Run command ~prism-mode~ to enable it in the current buffer.
 
 * Changelog
