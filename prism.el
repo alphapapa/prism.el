@@ -183,6 +183,7 @@
   ""
   (cl-macrolet ((without-prism-faces (faces)
                                      `(cl-loop for face in ,faces
+                                               ;; FIXME: This removes anonymous faces.
                                                unless (or (not (facep face))
                                                           (string-prefix-p "prism-level-" (symbol-name face)))
                                                collect face)))
@@ -283,7 +284,7 @@ necessary."
     (if prism-mode
         (progn
           (unless prism-faces
-            (prism-mode -1)
+            (setq prism-mode nil)
             (user-error "Please set `prism' colors with `prism-set-faces'"))
           (with-current-buffer (prism-debug-buffer)
             (erase-buffer))
