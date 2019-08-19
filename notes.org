@@ -37,6 +37,18 @@
   (prism-set-faces :colors (solarized-with-color-variables 'dark
                              (list red orange yellow green blue cyan violet magenta))
     :num 24)
+  (prism-set-faces :num 24
+    :lightens (list 10 20 30) :desaturations (list 10 20 30)
+    :colors (list "red" "orange" "yellow" "green" "blue" "cyan" "violet" "magenta")
+    )
+  (prism-set-faces :num 24
+    :lightens (list 10 20 30) :desaturations (list 10 20 30)
+    :colors (list "red" "orange" "yellow" "green" "blue" "cyan" "violet" )
+    )
+  (prism-set-faces :num 24
+    :lightens (list 20 30 40) :desaturations (list 10 20 30)
+    :colors (list "red" "orange" "yellow" "green" "blue" "cyan" "violet" "magenta")
+    )
 
   (prism-set-faces :num 24
     :desaturations '(0 5 10) :lightens '(30 40 50)
@@ -75,6 +87,21 @@
     :lightens (cl-loop for i from 0 below 16
                        collect (* 3 i))
     :colors (list "red" "white" "dodgerblue" "white"))
+
+  (prism-set-faces :num 16
+    :desaturations (cl-loop for i from 0 below 16
+                            collect (* i 3))
+    :lightens (cl-loop for i from 0 below 16
+                       collect (* 3 i))
+    :colors (list "red" "white" "dodgerblue" ))
+
+  ;; This is very pleasant:
+  (prism-set-faces :num 16
+    :desaturations (cl-loop for i from 0 below 16
+                            collect (* i 3))
+    :lightens (cl-loop for i from 0 below 16
+                       collect (* 3 i))
+    :colors (list "dodgerblue" "medium sea green" "sandy brown"))
 
   (defun weird-sort (list)
     (-let* (((a b) (-split-at (/ (length list) 2) list))
