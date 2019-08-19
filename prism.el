@@ -48,7 +48,8 @@
 ;;;; Customization
 
 (defgroup prism nil
-  "FIXME: Docstring.")
+  "FIXME: Docstring."
+  :group 'font-lock)
 
 (defcustom prism-color-attribute :foreground
   "FIXME: Docstring.")
@@ -59,43 +60,20 @@
 (defcustom prism-lightens '(0 5 10)
   "FIXME: Docstring.")
 
-(defcustom prism-match-end (lambda (&rest _ignore)
-                             (cond ((looking-at-p (rx (or "(" ")")))
-                                    (forward-char 1)
-                                    (point))
-                                   ((looking-at-p (rx (syntax string-quote)))
-                                    (point))
-                                   (t (ignore-errors
-                                        (forward-symbol 1)
-                                        (point)))))
-  "FIXME: Docstring.")
-
-(defcustom prism-match-start
-  ;; NOTE: Not currently used, but not removing yet.
-  (lambda (&rest _ignore)
-    (while (and (looking-at-p (rx (or space eol)))
-                (not (eobp)))
-      (forward-whitespace 1))
-    (when (looking-at-p (rx (syntax string-quote)))
-      (forward-char 1))
-    (while (or (nth 4 (syntax-ppss))
-               (save-excursion
-                 (forward-char 1)
-                 (nth 4 (syntax-ppss))))
-      (forward-line 1))
-    (point))
-  "FIXME: Docstring.")
-
 ;;;; Commands
 
 
 ;;;; Functions
 
-(defun prism-debug-buffer ()
-  (or (get-buffer "*prism-debug*")
-      (with-current-buffer (get-buffer-create "*prism-debug*")
-        (buffer-disable-undo)
-        (current-buffer))))
+(defmacro prism-debug (obj)
+  (when prism-debug
+    `(with-current-buffer (or (get-buffer "*prism-debug*")
+                              (with-current-buffer (get-buffer-create "*prism-debug*")
+                                (buffer-disable-undo)
+                                (current-buffer)))
+       (save-excursion
+         (goto-char (point-max))
+         (print ,obj (current-buffer))))))
 
 (defun prism-extend-region ()
   ;; FIXME: Docstring.
@@ -103,23 +81,45 @@
   ;; FIXME: Not sure if `ignore-errors' is required here.
   (prism-debug (list (cons 'extend-region 1)
                      (cons 'point (point))))
-  (save-excursion
-    (when (ignore-errors
-            (backward-up-list 1 t t))
-      (setf font-lock-beg (point))))
-  (setf font-lock-end (let ((end (save-excursion
-                                   (thing-at-point--end-of-sexp)
-                                   (point))))
-                        (if (> end font-lock-end)
-                            end
-                          font-lock-end)))
-  (prism-debug (list (cons 'extend-region 2)
-                     (cons 'point (point))
-                     (cons 'font-lock-beg font-lock-beg)
-                     (cons 'font-lock-end font-lock-end))))
+  (let ((orig-pos (point))
+        changed-p)
+    (save-excursion
+      (when (ignore-errors
+              (backward-up-list 1 t t))
+        (setf font-lock-beg (point))
+        (unless (= font-lock-beg orig-pos)
+          (setf changed-p t))))
+    (setf font-lock-end
+          (let ((end (save-excursion
+                       (ignore-errors
+                         ;; This function signals an error, (scan-error "Containing
+                         ;; expression ends prematurely"), when called with point
+                         ;; immediately before the closing paren of an sexp.  In that
+                         ;; case, we're already at the end, so ignore the error.
+                         ;; FIXME: Maybe use something other than `thing-at-point--end-of-sexp',
+                         ;; although its implementation looks very simple.
+                         (thing-at-point--end-of-sexp))
+                       (point))))
+            (if (> end font-lock-end)
+                (prog1 end
+                  (setf changed-p t))
+              font-lock-end)))
+    (prism-debug (list (cons 'extend-region 2)
+                       (cons 'point (point))
+                       (cons 'font-lock-beg font-lock-beg)
+                       (cons 'font-lock-end font-lock-end)))
+    changed-p))
 
-(defsubst prism-skip ()
+(defun prism-match (limit)
+  ;; FIXME: Docstring.
+  ""
+  (prism-debug (list (cons 'match 1)
+                     (cons 'point (point))
+                     (cons 'limit limit)))
+  ;; Skip things.
   (while (cond ((eobp) nil)
+               ((looking-at-p (rx (syntax string-quote)))
+                (forward-char 1))
                ((eolp)
                 (forward-line 1))
                ((looking-at-p (rx (syntax comment-start)))
@@ -128,15 +128,8 @@
                 (when (re-search-forward (rx (not space)) nil t)
                   (goto-char (match-beginning 0))))
                ((nth 4 (syntax-ppss))
-                (forward-line 1)))))
-
-(defun prism-match (limit)
-  ;; FIXME: Docstring.
-  ""
-  (prism-debug (list (cons 'match 1)
-                     (cons 'point (point))
-                     (cons 'limit limit)))
-  (prism-skip)
+                (forward-line 1))))
+  ;; Gather data.
   (-let* ((start (point))
           ((depth _start-of-innermost-list _start-of-last-complete-sexp-terminated
                   in-string-p comment-level-p _following-quote-p
@@ -145,8 +138,20 @@
            (syntax-ppss))
           (at-comment-p (or (looking-at-p (rx (syntax comment-start)))
                             comment-level-p))
-          (looking-at-closing-paren-p (looking-at-p (rx ")")))
-          (end (funcall prism-match-end)))
+          (end (save-excursion
+                 (cond ((looking-at-p (rx (syntax string-quote)))
+                        (point))
+                       ((looking-at-p (rx (in "([)]")))
+                        (1+ (point)))
+                       ((re-search-forward (rx (or (syntax string-quote) (syntax comment-start) (in "()[]"))) nil t)
+                        (cond ((cl-member (char-before) '(?\") :test #'char-equal)
+                               (1- (point)))
+                              ((cl-member (char-before) '(?\) ?\]) :test #'char-equal)
+                               (1- (point)))
+                              ((cl-member (char-before) '(?\( ?\[) :test #'char-equal)
+                               (point))
+                              (t (1- (point)))))
+                       (t (point))))))
     (prism-debug (list (cons 'match 2)
                        (cons 'point (point))
                        (cons 'limit limit)
@@ -160,23 +165,18 @@
           (in-string-p
            (setf prism-face nil)
            (re-search-forward (rx (syntax string-delimiter)) nil t)
-           (forward-char 1)
+           (goto-char end)
            t)
           (at-comment-p
            (setf prism-face nil)
-           (forward-line 1)
+           (goto-char end)
            t)
-          (t (when looking-at-closing-paren-p
+          (t (when (looking-at-p (rx ")"))
                (cl-decf depth))
              (set-match-data (list start end (current-buffer)))
-             (setf prism-face (alist-get depth prism-faces))))))
-
-(defun prism-debug (obj)
-  (when prism-debug
-    (with-current-buffer (prism-debug-buffer)
-      (save-excursion
-        (goto-char (point-max))
-        (print obj (current-buffer))))))
+             (setf prism-face (alist-get depth prism-faces))
+             (goto-char end)
+             t))))
 
 (cl-defun prism-remove-faces (&optional (beg (point-min)))
   ;; FIXME: Docstring.
@@ -286,8 +286,6 @@ necessary."
           (unless prism-faces
             (setq prism-mode nil)
             (user-error "Please set `prism' colors with `prism-set-faces'"))
-          (with-current-buffer (prism-debug-buffer)
-            (erase-buffer))
           (font-lock-add-keywords nil keywords 'append)
           (add-hook 'font-lock-extend-region-functions #'prism-extend-region nil 'local)
           (font-lock-flush))
