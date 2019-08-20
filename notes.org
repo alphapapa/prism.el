@@ -1,3 +1,10 @@
+#+TITLE: =prism= notes
+
+* Tasks
+
+** TODO Study =rainbow-blocks=
+
+It uses other methods, including modified syntax tables, and it sets both the =font-lock-face= and =face= properties.  It seems much faster.
 
 * Samples
 
