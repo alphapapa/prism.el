@@ -15,6 +15,12 @@
 :TOC:      ignore
 :END:
 
+One of the benefits of =prism= is making it easy to see which list elements are in.  For example, in this excerpt from =org-get-entries-from-diary= from =org-agenda.el=, the =funcall='s first argument is an unusually indented =if= form, and the indentation nearly aligns the =funcall='s second argument, =date=, at the column where the =if='s /else/ clause would usually be.  But with depth-based colorization, it's easy to see that =date= and =1= are arguments to =funcall=, not part of the =if= form.
+
+It's also easy to distinguish the =diary-list-entries-hook= variable's value form from other variables, and the =entries= variable's different color clearly shows that it has no value form.
+
+[[images/one-armed-if.png]]
+
 It's easy to adjust the colors with ~prism-set-faces~.  Here are some examples.
 
 You can use just a few faces in combination with the =desaturations= and =lightens= to create a palette of colors:
@@ -22,9 +28,12 @@ You can use just a few faces in combination with the =desaturations= and =lighte
 [[images/2-faces.png]]
 [[images/4-faces.png]]
 
-Or even a single color:
+Or even a single color, going in one direction:
 
 [[images/1-color.png]]
+
+...or the other:
+
 [[images/1-color-reversed.png]]
 
 If you use [[https://github.com/bbatsov/solarized-emacs][solarized-theme]], you can use ~solarized-with-color-variables~ to get colors from the theme:
