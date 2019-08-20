@@ -64,16 +64,7 @@
                              (list red orange yellow green blue cyan violet magenta))
     :num 24 :lightens (list -10 -20 -30))
 
-  (prism-set-faces :colors (solarized-with-color-variables 'dark
-                             (--map (solarized-color-blend it (face-attribute 'default :background) 50)
-                                    (list red orange yellow green blue cyan violet magenta)))
-    :num 24 :attribute :background)
 
-  (prism-set-faces :colors (solarized-with-color-variables 'dark
-                             (--map (solarized-color-blend it (face-attribute 'default :background) .15)
-                                    (list red orange yellow green blue cyan violet magenta)))
-    :desaturations (list 5 10 15) :lightens (list 5 10 15)
-    :num 24 :attribute :background)
 
   (prism-set-faces :colors (weird-sort (-sort (-on #'< (lambda (color)
                                                          (->> color color-name-to-rgb (apply #'color-rgb-to-hsl) car)))
@@ -103,12 +94,47 @@
                        collect (* 3 i))
     :colors (list "dodgerblue" "medium sea green" "sandy brown"))
 
+  (prism-set-faces :num 16 
+    :desaturations (cl-loop for i from 0 below 16
+                            collect (* i 2.5))
+    :lightens (cl-loop for i from 0 below 16
+                       collect (* i 2.5))
+    :colors (list "dodgerblue" "medium sea green" "sandy brown"))
+
+  (prism-set-faces :num 16 :suffix 'strings
+    :desaturations (cl-loop for i from 0 below 16
+                            collect (* i 2.5))
+    :lightens (cl-loop for i from 0 below 16
+                       collect (* i 2.5))
+    :colors (--map (solarized-color-blend it (face-attribute 'default :background) 0.7)
+                   (list "dodgerblue" "medium sea green" "sandy brown")))
+
   (defun weird-sort (list)
     (-let* (((a b) (-split-at (/ (length list) 2) list))
             (b (nreverse b)))
       (-interleave a b)))
 
   (weird-sort '( 1 2 3 4 5 6 7 8)) ;;=> (1 8 2 7 3 6 4 5)
+
+  ;;;; Background
+
+  (prism-set-faces :num 16 :attribute :background
+    :desaturations (cl-loop for i from 0 below 16
+                            collect (* i 30))
+    :lightens (cl-loop for i from 0 below 16
+                       collect (* -1 i 10))
+    :colors (list "dodgerblue" "medium sea green" "sandy brown"))
+
+  (prism-set-faces :colors (solarized-with-color-variables 'dark
+                             (--map (solarized-color-blend it (face-attribute 'default :background) 50)
+                                    (list red orange yellow green blue cyan violet magenta)))
+    :num 24 :attribute :background)
+
+  (prism-set-faces :colors (solarized-with-color-variables 'dark
+                             (--map (solarized-color-blend it (face-attribute 'default :background) .15)
+                                    (list red orange yellow green blue cyan violet magenta)))
+    :desaturations (list 5 10 15) :lightens (list 5 10 15)
+    :num 24 :attribute :background)
 #+END_SRC
 
 * Profiling
