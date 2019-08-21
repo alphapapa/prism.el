@@ -45,7 +45,6 @@ If you use [[https://github.com/bbatsov/solarized-emacs][solarized-theme]], you 
 [[images/1.png]]
 [[images/2.png]]
 [[images/3.png]]
-[[images/4.png]]
 [[images/5.png]]
 
 You can shuffle the order of the colors until you find a pattern you like:
