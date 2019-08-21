@@ -106,7 +106,7 @@ It uses other methods, including modified syntax tables, and it sets both the =f
                             collect (* i 2.5))
     :lightens (cl-loop for i from 0 below 16
                        collect (* i 2.5))
-    :colors (list "dodgerblue" "medium sea green" "sandy brown"))
+    :colors (list "sandy brown" "dodgerblue" "medium sea green"))
 
   (prism-set-faces :num 16 :suffix 'strings
     :desaturations (cl-loop for i from 0 below 16
