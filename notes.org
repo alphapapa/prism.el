@@ -142,6 +142,10 @@ It uses other methods, including modified syntax tables, and it sets both the =f
                                     (list red orange yellow green blue cyan violet magenta)))
     :desaturations (list 5 10 15) :lightens (list 5 10 15)
     :num 24 :attribute :background)
+
+  (prism-set-faces :lightens '(0 5 10) :desaturations '(-2.5 0 2.5)
+    :colors (-map #'doom-color
+                  '(red orange yellow green blue violet)))
 #+END_SRC
 
 * Profiling

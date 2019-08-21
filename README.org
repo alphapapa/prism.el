@@ -36,6 +36,10 @@ Or even a single color, going in one direction:
 
 [[images/1-color-reversed.png]]
 
+If you use [[https://github.com/hlissner/emacs-doom-themes][Doom themes]], you can use =doom-color= to get colors from the theme:
+
+[[images/doom-spacegrey.png]]
+
 If you use [[https://github.com/bbatsov/solarized-emacs][solarized-theme]], you can use ~solarized-with-color-variables~ to get colors from the theme:
 
 [[images/1.png]]
