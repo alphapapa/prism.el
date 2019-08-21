@@ -1,4 +1,4 @@
-;;; prism.el --- My highlighting for lisp            -*- lexical-binding: t; -*-
+;;; prism.el --- Disperse lisp forms into a spectrum of color by depth  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Adam Porter
 
@@ -20,13 +20,16 @@
 
 ;;; Commentary:
 
-;; Like `rainbow-blocks', but respects existing non-color face properties.
+;; Disperse lisp forms into a spectrum of color by depth.  Like
+;; `rainbow-blocks', but respects existing non-color face properties,
+;; and allows flexible configuration of faces and colors.
 
 ;;; Code:
 
 ;;;; Requirements
 
 (require 'cl-lib)
+(require 'thingatpt)
 
 (require 'anaphora)
 (require 'dash)
@@ -34,8 +37,7 @@
 ;;;; Variables
 
 (defvar prism-num-faces nil
-  ;; FIXME: Docstring.
-  )
+  "Number of `prism' faces.  Set automatically by `prism-set-faces'.")
 
 (defvar prism-faces nil
   "Alist mapping depth levels to faces.")
@@ -43,25 +45,49 @@
 (defvar prism-face nil
   "Set by `prism-match' during fontification.")
 
-(defvar prism-debug nil)
+(defvar prism-debug nil
+  "Enables `prism' debug output.
+Only takes effect by recompiling the `prism' package with setting
+non-nil.")
 
 ;;;; Customization
 
 (defgroup prism nil
-  "FIXME: Docstring."
+  "Disperse lisp forms into a spectrum of colors according to depth."
   :group 'font-lock)
 
 (defcustom prism-color-attribute :foreground
-  "FIXME: Docstring.")
+  "Face attribute set in `prism' faces."
+  :type '(choice (const :tag "Foreground" :foreground)
+                 (const :tag "Background" :background)))
 
 (defcustom prism-desaturations '(40 50 60)
-  "FIXME: Docstring.")
+  "Default desaturation values applied to faces at successively deeper depths.
+Extrapolated to the length of `prism-faces'."
+  :type '(repeat number))
 
 (defcustom prism-lightens '(0 5 10)
-  "FIXME: Docstring.")
+  "Default lightening values applied to faces at successively deeper depths.
+Extrapolated to the length of `prism-faces'."
+  :type '(repeat number))
 
-;;;; Commands
+;;;; Minor mode
 
+(define-minor-mode prism-mode
+  "Disperse lisp forms into a spectrum of colors according to depth."
+  :global nil
+  (let ((keywords '((prism-match 0 prism-face prepend))))
+    (if prism-mode
+        (progn
+          (unless prism-faces
+            (setq prism-mode nil)
+            (user-error "Please set `prism' colors with `prism-set-faces'"))
+          (font-lock-add-keywords nil keywords 'append)
+          (add-hook 'font-lock-extend-region-functions #'prism-extend-region nil 'local)
+          (font-lock-flush))
+      (font-lock-remove-keywords nil keywords)
+      (remove-hook 'font-lock-extend-region-functions #'prism-extend-region 'local)
+      (prism-remove-faces))))
 
 ;;;; Functions
 
@@ -76,9 +102,8 @@
          (print ,obj (current-buffer))))))
 
 (defun prism-extend-region ()
-  ;; FIXME: Docstring.
-  ""
-  ;; FIXME: Not sure if `ignore-errors' is required here.
+  "Extend region to the current sexp.
+For `font-lock-extend-region-functions'."
   (prism-debug (list (cons 'extend-region 1)
                      (cons 'point (point))))
   (let ((orig-pos (point))
@@ -111,8 +136,7 @@
     changed-p))
 
 (defun prism-match (limit)
-  ;; FIXME: Docstring.
-  ""
+  "Matcher function for `font-lock-keywords'."
   (prism-debug (list (cons 'match 1)
                      (cons 'point (point))
                      (cons 'limit limit)))
@@ -179,8 +203,9 @@
              t))))
 
 (cl-defun prism-remove-faces (&optional (beg (point-min)))
-  ;; FIXME: Docstring.
-  ""
+  "Remove `prism' faces from buffer.
+Note a minor bug at the moment: anonymous faces are also
+removed."
   (cl-macrolet ((without-prism-faces (faces)
                                      `(cl-loop for face in ,faces
                                                ;; FIXME: This removes anonymous faces.
@@ -273,25 +298,6 @@ necessary."
     (if final-element-p
         (-snoc new-list (-last-item list))
       new-list)))
-
-;;;; Minor mode
-
-(define-minor-mode prism-mode
-  ;; FIXME: Docstring.
-  ""
-  :global nil
-  (let ((keywords '((prism-match 0 prism-face prepend))))
-    (if prism-mode
-        (progn
-          (unless prism-faces
-            (setq prism-mode nil)
-            (user-error "Please set `prism' colors with `prism-set-faces'"))
-          (font-lock-add-keywords nil keywords 'append)
-          (add-hook 'font-lock-extend-region-functions #'prism-extend-region nil 'local)
-          (font-lock-flush))
-      (font-lock-remove-keywords nil keywords)
-      (remove-hook 'font-lock-extend-region-functions #'prism-extend-region 'local)
-      (prism-remove-faces))))
 
 ;;;; Footer
 
