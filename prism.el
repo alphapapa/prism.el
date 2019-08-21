@@ -158,7 +158,8 @@ For `font-lock-extend-region-functions'."
                ((looking-at-p (rx (syntax comment-start)))
                 (forward-line 1))
                ((looking-at-p (rx space))
-                (when (re-search-forward (rx (not space)) limit t)
+                (when (save-excursion
+                        (re-search-forward (rx (not space)) limit t))
                   (goto-char (match-beginning 0))))
                ((nth 4 (syntax-ppss))
                 (forward-line 1))))
