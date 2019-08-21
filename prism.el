@@ -204,6 +204,8 @@ For `font-lock-extend-region-functions'."
            (setf prism-face nil)
            (goto-char end)
            t)
+          ;; TODO: Handle bracket vector syntax here, maybe by using
+          ;; syntax tables like in `rainbow-blocks'.
           (t (when (looking-at-p (rx ")"))
                (cl-decf depth))
              (set-match-data (list start end (current-buffer)))
