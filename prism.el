@@ -197,7 +197,6 @@ For `font-lock-extend-region-functions'."
     (cond ((eobp) nil)
           (in-string-p
            (setf prism-face nil)
-           (re-search-forward (rx (syntax string-delimiter)) nil t)
            (goto-char end)
            t)
           (at-comment-p
