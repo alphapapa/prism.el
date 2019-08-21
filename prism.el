@@ -101,6 +101,11 @@ Extrapolated to the length of `prism-faces'."
          (goto-char (point-max))
          (print ,obj (current-buffer))))))
 
+;; Silence byte-compiler for these special variables that are bound
+;; around `font-lock-extend-region-functions'.
+(defvar font-lock-beg)
+(defvar font-lock-end)
+
 (defun prism-extend-region ()
   "Extend region to the current sexp.
 For `font-lock-extend-region-functions'."
