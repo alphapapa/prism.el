@@ -29,6 +29,7 @@
 ;;;; Requirements
 
 (require 'cl-lib)
+(require 'color)
 (require 'thingatpt)
 
 (require 'anaphora)
