@@ -556,8 +556,8 @@ Receives one argument, a color name or hex RGB string."
   :set #'prism-customize-set)
 
 (defcustom prism-colors
-  (list 'font-lock-comment-face 'font-lock-function-name-face
-        'font-lock-keyword-face 'font-lock-constant-face 'font-lock-type-face)
+  (list 'font-lock-type-face 'font-lock-function-name-face
+        'font-lock-keyword-face 'font-lock-doc-face)
   "List of colors used by default."
   :type '(repeat (choice (face :tag "Face (using its foreground color)")
                          color))
