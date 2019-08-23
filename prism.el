@@ -161,6 +161,7 @@ Receives one argument, a color name or hex RGB string."
 
 ;;;; Minor mode
 
+;;;###autoload
 (define-minor-mode prism-mode
   "Disperse lisp forms into a spectrum of colors according to depth."
   :global nil
