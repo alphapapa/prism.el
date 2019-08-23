@@ -41,52 +41,63 @@ It uses other methods, including modified syntax tables, and it sets both the =f
 ** Theme-setting
 
 #+BEGIN_SRC elisp
-  (prism-set-faces :colors (solarized-with-color-variables 'dark
+  (prism-set-colors :colors '(font-lock-keyword-face font-lock-builtin-face
+                             font-lock-constant-face font-lock-type-face))
+
+  (prism-set-colors :colors '("red" "orange" "yellow" "green" "blue" "cyan" "violet"))
+
+  (prism-set-colors :colors (list "dodgerblue" "medium sea green" "sandy brown"))
+
+  (prism-set-colors :colors (solarized-with-color-variables 'dark
                              (list red orange yellow green blue cyan violet magenta))
     :num 24)
-  (prism-set-faces :num 24
+  (prism-set-colors :num 24
     :lightens (list 10 20 30) :desaturations (list 10 20 30)
     :colors (list "red" "orange" "yellow" "green" "blue" "cyan" "violet" "magenta")
     )
-  (prism-set-faces :num 24
+  (prism-set-colors :num 24
     :lightens (list 10 20 30) :desaturations (list 10 20 30)
     :colors (list "red" "orange" "yellow" "green" "blue" "cyan" "violet" )
     )
-  (prism-set-faces :num 24
+  (prism-set-colors :num 24
     :lightens (list 20 30 40) :desaturations (list 10 20 30)
     :colors (list "red" "orange" "yellow" "green" "blue" "cyan" "violet" "magenta")
     )
 
-  (prism-set-faces :num 24
+  (prism-set-colors :num 24
     :desaturations '(0 5 10) :lightens '(30 40 50)
+    :colors (solarized-with-color-variables 'dark
+              (list red orange yellow green blue cyan violet magenta)))
+  (prism-set-colors :num 24
+    :lightens '(5 15 25)
     :colors (solarized-with-color-variables 'dark
               (list red orange yellow green blue cyan violet magenta)))
 
 
-  (prism-set-faces :colors (solarized-with-color-variables 'dark
+  (prism-set-colors :colors (solarized-with-color-variables 'dark
                              (list red orange yellow green blue cyan violet magenta))
     :num 24 :shuffle t)
 
-  (prism-set-faces :colors (solarized-with-color-variables 'dark
+  (prism-set-colors :colors (solarized-with-color-variables 'dark
                              (list red orange yellow green blue cyan violet magenta))
     :num 24 :lightens (list -10 -20 -30))
 
 
 
-  (prism-set-faces :colors (weird-sort (-sort (-on #'< (lambda (color)
+  (prism-set-colors :colors (weird-sort (-sort (-on #'< (lambda (color)
                                                          (->> color color-name-to-rgb (apply #'color-rgb-to-hsl) car)))
                                               (solarized-with-color-variables 'dark
                                                 (list red orange yellow green blue cyan violet magenta))))
     :num 24)
 
-  (prism-set-faces :num 16
+  (prism-set-colors :num 16
     :desaturations (cl-loop for i from 0 below 16
                             collect (* i 3))
     :lightens (cl-loop for i from 0 below 16
                        collect (* 3 i))
     :colors (list "red" "white" "dodgerblue" "white"))
 
-  (prism-set-faces :num 16
+  (prism-set-colors :num 16
     :desaturations (cl-loop for i from 0 below 16
                             collect (* i 3))
     :lightens (cl-loop for i from 0 below 16
@@ -94,21 +105,21 @@ It uses other methods, including modified syntax tables, and it sets both the =f
     :colors (list "red" "white" "dodgerblue" ))
 
   ;; This is very pleasant:
-  (prism-set-faces :num 16
+  (prism-set-colors :num 16
     :desaturations (cl-loop for i from 0 below 16
                             collect (* i 3))
     :lightens (cl-loop for i from 0 below 16
                        collect (* 3 i))
     :colors (list "dodgerblue" "medium sea green" "sandy brown"))
 
-  (prism-set-faces :num 16 
+  (prism-set-colors :num 16 
     :desaturations (cl-loop for i from 0 below 16
                             collect (* i 2.5))
     :lightens (cl-loop for i from 0 below 16
                        collect (* i 2.5))
     :colors (list "sandy brown" "dodgerblue" "medium sea green"))
 
-  (prism-set-faces :num 16 :suffix 'strings
+  (prism-set-colors :num 16 :suffix 'strings
     :desaturations (cl-loop for i from 0 below 16
                             collect (* i 2.5))
     :lightens (cl-loop for i from 0 below 16
@@ -125,27 +136,73 @@ It uses other methods, including modified syntax tables, and it sets both the =f
 
   ;;;; Background
 
-  (prism-set-faces :num 16 :attribute :background
+  (prism-set-colors :num 16 :attribute :background
     :desaturations (cl-loop for i from 0 below 16
                             collect (* i 30))
     :lightens (cl-loop for i from 0 below 16
                        collect (* -1 i 10))
     :colors (list "dodgerblue" "medium sea green" "sandy brown"))
 
-  (prism-set-faces :colors (solarized-with-color-variables 'dark
+  (prism-set-colors :colors (solarized-with-color-variables 'dark
                              (--map (solarized-color-blend it (face-attribute 'default :background) 50)
                                     (list red orange yellow green blue cyan violet magenta)))
     :num 24 :attribute :background)
 
-  (prism-set-faces :colors (solarized-with-color-variables 'dark
+  (prism-set-colors :colors (solarized-with-color-variables 'dark
                              (--map (solarized-color-blend it (face-attribute 'default :background) .15)
                                     (list red orange yellow green blue cyan violet magenta)))
     :desaturations (list 5 10 15) :lightens (list 5 10 15)
     :num 24 :attribute :background)
 
-  (prism-set-faces :lightens '(5 10 15) :desaturations '(-2.5 0 2.5)
+  (prism-set-colors :lightens '(5 10 15) :desaturations '(-2.5 0 2.5)
     :colors (-map #'doom-color
                   '(red orange yellow green blue violet)))
+
+  ;;;; Strings, comments
+
+  (prism-set-colors :num 24
+    :lightens '(5 15 25)
+    :colors (solarized-with-color-variables 'dark
+              (list red orange yellow green blue cyan violet magenta))
+    :comments-fn (lambda (color)
+                   (--> color
+                        (color-desaturate-name it 50)
+                        ;; (color-lighten-name it -5)
+                        )))
+  (prism-set-colors :num 16
+    :desaturations (cl-loop for i from 0 below 16
+                            collect (* i 2.5))
+    :lightens (cl-loop for i from 0 below 16
+                       collect (* i 2.5))
+    :colors (list "sandy brown" "dodgerblue" "medium sea green"))
+
+
+  (prism-set-colors :num 16
+    :desaturations (cl-loop for i from 0 below 16
+                            collect (* i 2.5))
+    :lightens (cl-loop for i from 0 below 16
+                       collect (* i 2.5))
+    :colors (list "sandy brown" "dodgerblue" "medium sea green")
+    :comments-fn (lambda (color)
+                   (prism-blend color (face-attribute 'font-lock-comment-face :foreground) 0.25)))
+
+  (prism-set-colors :num 16
+    :desaturations (cl-loop for i from 0 below 16
+                            collect (* i 2.5))
+    :lightens (cl-loop for i from 0 below 16
+                       collect (* i 2.5))
+    :colors (list "sandy brown" "dodgerblue" "medium sea green")
+    :comments-fn (lambda (color)
+                   (prism-blend color (face-attribute 'font-lock-comment-face :foreground) 0.25))
+    :strings-fn (lambda (color)
+                  (prism-blend color "white" 0.5)))
+  (prism-set-colors :num 16
+    :colors (list "sandy brown" "dodgerblue" "medium sea green")
+    :comments-fn (lambda (color)
+                   (prism-blend color (face-attribute 'font-lock-comment-face :foreground) 0.25))
+    :strings-fn (lambda (color)
+                  (prism-blend color "white" 0.5)))
+
 #+END_SRC
 
 * Profiling
