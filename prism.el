@@ -157,7 +157,8 @@ For `font-lock-extend-region-functions'."
                ((eolp)
                 (forward-line 1))
                ((looking-at-p (rx (syntax comment-start)))
-                (forward-line 1))
+                ;; See `(elisp)Motion via Parsing'.
+                (forward-comment (buffer-size)))
                ((looking-at-p (rx space))
                 (when (save-excursion
                         (re-search-forward (rx (not space)) limit t))
