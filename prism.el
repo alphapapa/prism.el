@@ -489,6 +489,16 @@ necessary."
         (-snoc new-list (-last-item list))
       new-list)))
 
+(defun prism-customize-set (option value)
+  "Set OPTION to VALUE, and call `prism-set-colors' when possible."
+  (set-default option value)
+  (when (--all? (and (boundp it) (symbol-value it))
+                '(prism-num-faces prism-color-attribute prism-desaturations
+                  prism-lightens prism-comments-fn prism-strings-fn prism-colors))
+    ;; We can't call `prism-set-colors' until *all* relevant options
+    ;; have been set.
+    (prism-set-colors)))
+
 ;;;; Customization
 
 ;; These are at the bottom because the setters call `prism-set-faces',
@@ -501,35 +511,27 @@ necessary."
 (defcustom prism-num-faces 16
   "Number of `prism' faces."
   :type 'integer
-  :set (lambda (option value)
-         (set-default option value)
-         (prism-set-colors)))
+  :set #'prism-customize-set)
 
 (defcustom prism-color-attribute :foreground
   "Face attribute set in `prism' faces."
   :type '(choice (const :tag "Foreground" :foreground)
                  (const :tag "Background" :background))
-  :set (lambda (option value)
-         (set-default option value)
-         (prism-set-colors)))
+  :set #'prism-customize-set)
 
 (defcustom prism-desaturations '(40 50 60)
   "Default desaturation percentages applied to colors as depth increases.
 This need not be as long as the number of faces used, because
 it's extrapolated to the length of `prism-faces'."
   :type '(repeat number)
-  :set (lambda (option value)
-         (set-default option value)
-         (prism-set-colors)))
+  :set #'prism-customize-set)
 
 (defcustom prism-lightens '(0 5 10)
   "Default lightening percentages applied to colors as depth increases.
 This need not be as long as the number of faces used, because
 it's extrapolated to the length of `prism-faces'."
   :type '(repeat number)
-  :set (lambda (option value)
-         (set-default option value)
-         (prism-set-colors)))
+  :set #'prism-customize-set)
 
 (defcustom prism-comments t
   "Whether to colorize comments.
@@ -543,9 +545,7 @@ the appearance of e.g. commented Lisp headings."
   "Function which adjusts colors for comments.
 Receives one argument, a color name or hex RGB string."
   :type 'function
-  :set (lambda (option value)
-         (set-default option value)
-         (prism-set-colors)))
+  :set #'prism-customize-set)
 
 (defcustom prism-strings t
   "Whether to fontify strings."
@@ -557,9 +557,7 @@ Receives one argument, a color name or hex RGB string."
   "Function which adjusts colors for strings.
 Receives one argument, a color name or hex RGB string."
   :type 'function
-  :set (lambda (option value)
-         (set-default option value)
-         (prism-set-colors)))
+  :set #'prism-customize-set)
 
 (defcustom prism-colors
   (list 'font-lock-comment-face 'font-lock-function-name-face
@@ -567,9 +565,7 @@ Receives one argument, a color name or hex RGB string."
   "List of colors used by default."
   :type '(repeat (choice (face :tag "Face (using its foreground color)")
                          color))
-  :set (lambda (option value)
-         (set-default option value)
-         (prism-set-colors)))
+  :set #'prism-customize-set)
 
 (defgroup prism-faces nil
   "Faces for `prism'.  Set automatically with `prism-set-colors'.  Do not set manually."
