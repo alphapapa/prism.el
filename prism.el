@@ -24,16 +24,19 @@
 
 ;;; Commentary:
 
-;; Disperse lisp forms into a spectrum of color by depth.  Like
-;; `rainbow-blocks', but respects existing non-color face properties,
-;; and allows flexible configuration of faces and colors.  Also
-;; optionally colorizes strings and/or comments by code depth in a
-;; similar, customizable way.
+;; `prism' disperses lisp forms into a spectrum of color by depth.
+;; It's similar to `rainbow-blocks', but it respects existing
+;; non-color face properties, and allows flexible configuration of
+;; faces and colors.  It also optionally colorizes strings and/or
+;; comments by code depth in a similar, customizable way.
 
 ;; Usage:
 
 ;; 1.  Activate `prism-mode' in a buffer.
 ;; 2.  Enjoy.
+
+;; When a theme is loaded or disabled, colors are automatically
+;; updated.
 
 ;; To customize, see the `prism' customization group, e.g. by using
 ;; "M-x customize-group RET prism RET".  For example, by default,
@@ -47,14 +50,14 @@
 ;; perform additional color manipulations.  The primary argument is
 ;; COLORS, which should be a list of colors, each of which may be a
 ;; name, a hex RGB string, or a face name (of which the foreground
-;; color is used, but see the ATTRIBUTE argument).  Note that the list
-;; of colors need not be as long as the number of faces that's
-;; actually set (e.g. the default is 16 faces), because the colors are
-;; automatically repeated and adjusted as necessary.
+;; color is used).  Note that the list of colors need not be as long
+;; as the number of faces that's actually set (e.g. the default is 16
+;; faces), because the colors are automatically repeated and adjusted
+;; as necessary.
 
-;; After calling `prism-set-colors', the results may be saved using
-;; `prism-save-colors', so that `prism-set-colors' will use those
-;; values by default.
+;; If `prism-set-colors' is called with the SAVE argument, the results
+;; are saved to customization options so that `prism-mode' will use
+;; those colors by default.
 
 ;; Here's an example that the author finds pleasant:
 
