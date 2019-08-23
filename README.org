@@ -76,9 +76,10 @@ You can even set the background color instead (similar to [[https://github.com/s
 
 =prism= is much like [[https://github.com/istib/rainbow-blocks][rainbow-blocks]], but it differs in a few ways:
 
++  =prism= optionally colorizes comments and strings according to the depth of their surrounding code.
++  =prism= highlights parens with the color of the outer list's symbols, which helps parens stand out from symbols and shows which depth surrounds a list.
 +  =prism= adds to the ~face~ text property, which respects existing fontification, while =rainbow-blocks= sets the ~font-lock-face~ text property, which overrides existing fontification.  This means that =prism= is compatible with packages like [[https://github.com/alphapapa/highlight-function-calls][highlight-function-calls]] and [[https://github.com/Fanael/highlight-quoted][highlight-quoted]].
 +  =prism= uses ~font-lock-add-keywords~, while =rainbow-blocks= uses ~jit-lock-register~.  Which is better?  Good question.  Hopefully, the former...
-+  =prism= highlights parens with the color of the outer list's symbols, which helps parens stand out from symbols.  This is a matter of preference, of course, and an option may be added to configure this in the future.
 
 * Installation
 :PROPERTIES:
