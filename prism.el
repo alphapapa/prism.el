@@ -4,6 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: http://github.com/alphapapa/prism.el
+;; Version: 0.1-pre
 ;; Package-Requires: ((emacs "26.1") (dash "2.14.1"))
 ;; Keywords: faces lisp
 
@@ -24,7 +25,7 @@
 
 ;;; Commentary:
 
-;; `prism' disperses lisp forms into a spectrum of color by depth.
+;; `prism' disperses Lisp forms into a spectrum of color by depth.
 ;; It's similar to `rainbow-blocks', but it respects existing
 ;; non-color face properties, and allows flexible configuration of
 ;; faces and colors.  It also optionally colorizes strings and/or
@@ -157,7 +158,8 @@ Set automatically.")
 
 (defun prism-after-theme (&rest args)
   "For `load-theme' advice.
-Unless NO-ENABLE (optional third argument, like `load-theme') is
+ARGS may be what `load-theme' and `disable-theme' expect.  Unless
+NO-ENABLE (optional third argument, like `load-theme') is
 non-nil, call `prism-set-colors' to update `prism' faces."
   (unless (cl-third args)
     (prism-set-colors)))
@@ -195,7 +197,7 @@ For `font-lock-extend-region-functions'."
     changed-p))
 
 (defun prism-syntax-table (syntax-table)
-  "Return SYNTAX-TABLE modified for `prism-mode'."
+  "Return SYNTAX-TABLE modified for `prism'."
   ;; Copied from `rainbow-blocks-make-syntax-table'.
   (let ((table (copy-syntax-table syntax-table)))
     (modify-syntax-entry ?\( "()  " table)
@@ -207,7 +209,8 @@ For `font-lock-extend-region-functions'."
     table))
 
 (defun prism-match (limit)
-  "Matcher function for `font-lock-keywords'."
+  "Matcher function for `font-lock-keywords'.
+Matches up to LIMIT."
   ;; Trying to rewrite this function.
   ;; NOTE: Be sure to return non-nil when a match is found.
   ;; NOTE: It feels wrong, but since we're not using `re-search-forward' until
