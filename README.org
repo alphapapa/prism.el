@@ -42,6 +42,10 @@ Or even a single color, going in one direction:
 
 [[images/1-color-reversed.png]]
 
+The default configuration looks decent in the default Emacs theme:
+
+[[images/default-emacs.png]]
+
 If you use [[https://github.com/hlissner/emacs-doom-themes][Doom themes]], you can use =doom-color= to get colors from the theme:
 
 [[images/doom-spacegrey.png]]
