@@ -397,9 +397,11 @@ modified as desired for comments or strings, respectively."
                             do (set-face-attribute face nil attribute color)
                             collect (cons i face))))
     (let* ((colors (->> colors
-                        (--map (cl-etypecase it
-                                 (face (face-attribute it :foreground nil 'inherit))
-                                 (string it)))
+                        (--map (pcase-exhaustive it
+                                 ((pred facep) (face-attribute it :foreground nil 'inherit))
+                                 ((pred stringp) it)
+                                 ((pred functionp) (funcall it))
+                                 (`(themed ,color) (prism-theme-color color))))
                         -cycle
                         (prism-modify-colors :num num
                                              :desaturations desaturations
@@ -491,10 +493,39 @@ necessary."
   (set-default option value)
   (when (--all? (and (boundp it) (symbol-value it))
                 '(prism-num-faces prism-color-attribute prism-desaturations
-                  prism-lightens prism-comments-fn prism-strings-fn prism-colors))
+                                  prism-lightens prism-comments-fn prism-strings-fn prism-colors))
     ;; We can't call `prism-set-colors' until *all* relevant options
     ;; have been set.
     (prism-set-colors)))
+
+(declare-function doom-color "ext:doom-themes" t)
+
+(defun prism-theme-color (color)
+  "Return COLOR (a string) from current `doom' or `solarized' theme.
+If no `doom' or `solarized' theme is active, return COLOR.
+Assumes the first `doom' or `solarized' theme found in
+`custom-enabled-themes' is the active one."
+  (if (string-empty-p color)
+      color
+    (if-let* ((active-theme (--first (or (string-match (rx bos "doom-" (group (1+ anything)))
+                                                       (symbol-name it))
+                                         (string-match (rx bos "solarized-" (group (1+ anything)))
+                                                       (symbol-name it)))
+                                     custom-enabled-themes))
+              (theme-name (symbol-name active-theme)))
+        (pcase theme-name
+          ((rx bos "solarized-")
+           (let ((variant (intern (string-trim theme-name (rx "solarized-"))))
+                 (color (intern color)))
+             ;; Yes, `eval' is evil, but for some reason I can't figure out,
+             ;; it's the only way this works here.  In a test function,
+             ;; `symbol-value' worked fine, but not here.  Go figure.
+             (eval `(solarized-with-color-variables ',variant
+                      ,color))))
+          ((rx bos "doom-")
+           (or (doom-color (intern color))
+               color)))
+      color)))
 
 ;;;; Customization
 
@@ -562,7 +593,11 @@ Receives one argument, a color name or hex RGB string."
         'font-lock-keyword-face 'font-lock-doc-face)
   "List of colors used by default."
   :type '(repeat (choice (face :tag "Face (using its foreground color)")
-                         color))
+                         color
+                         (list :tag "Doom/Solarized theme color (requires active theme)"
+                               (const themed)
+                               (string :tag "Color name"))
+                         (function :tag "Function which returns a color")))
   :set #'prism-customize-set)
 
 (defgroup prism-faces nil
