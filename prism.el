@@ -503,7 +503,8 @@ necessary."
 
 (defgroup prism nil
   "Disperse lisp forms into a spectrum of colors according to depth."
-  :group 'font-lock)
+  :group 'font-lock
+  :link '(url-link "https://github.com/alphapapa/prism.el"))
 
 (defcustom prism-num-faces 16
   "Number of `prism' faces."
