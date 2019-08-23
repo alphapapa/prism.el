@@ -238,17 +238,18 @@ Matches up to LIMIT."
         (let ((parse-sexp-ignore-comments t)
               depth in-string-p comment-level-p comment-or-string-start start end
               found-comment-p found-string-p)
-          (while  ;; Skip to start of where we should match.
-              (cond ((eolp)
-                     (forward-line 1))
-                    ((looking-at-p (rx blank))
-                     (forward-whitespace 1))
-                    ((unless prism-strings
-                       (when (looking-at-p (rx (syntax string-quote)))
-                         ;; At a string: skip it.
-                         (forward-sexp))))
-                    ((unless prism-comments
-                       (forward-comment (buffer-size))))))
+          (while ;; Skip to start of where we should match.
+              (and (not (eobp))
+                   (cond ((eolp)
+                          (forward-line 1))
+                         ((looking-at-p (rx blank))
+                          (forward-whitespace 1))
+                         ((unless prism-strings
+                            (when (looking-at-p (rx (syntax string-quote)))
+                              ;; At a string: skip it.
+                              (forward-sexp))))
+                         ((unless prism-comments
+                            (forward-comment (buffer-size)))))))
           (parse-syntax)
           (when in-string-p
             ;; In a string: go back to its beginning (before its delimiter).
