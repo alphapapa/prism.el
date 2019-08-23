@@ -110,11 +110,14 @@ Set automatically.")
 ;; which is defined before their defcustoms.  It's circular, but this
 ;; breaks the loop.
 (defvar prism-colors)
+(defvar prism-color-attribute)
 (defvar prism-desaturations)
 (defvar prism-lightens)
 (defvar prism-num-faces)
 (defvar prism-comments-fn)
+(defvar prism-comments)
 (defvar prism-strings-fn)
+(defvar prism-strings)
 
 ;;;; Minor mode
 
