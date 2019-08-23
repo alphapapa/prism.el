@@ -380,17 +380,28 @@ removed."
                         (--> color
                              (color-desaturate-name it 20)
                              (color-lighten-name it 10)))))
-  "Set NUM `prism' faces according to COLORS.
-When SAVE is non-nil, save attributes to `prism-' customization
-options for future use by default.  COLORS is a list of one or
-more color name strings (like \"green\" or \"#ff0000\") or face
-symbols (of which the foreground color is used).  DESATURATIONS
-and LIGHTENS are lists of integer percentages applied to colors
-as depth increases; they need not be as long as NUM, because they
-are extrapolated automatically.  COMMENTS-FN and STRINGS-FN are
-functions of one argument, a color name or hex RGB string, which
-return the color having been modified as desired for comments or
-strings, respectively."
+  "Set `prism' faces.  Call after loading a new theme.
+Call also when COLORS has been set to a list of faces and those
+faces have been modified.
+
+NUM is the number of faces to set, i.e. the depth to make faces
+for.
+
+When SAVE is non-nil, save attributes to `prism-'
+customization options for future use by default.
+
+COLORS is a list of one or more color name strings (like
+\"green\" or \"#ff0000\") or face symbols (of which the
+foreground color is used).
+
+DESATURATIONS and LIGHTENS are lists of integer percentages
+applied to colors as depth increases; they need not be as long as
+NUM, because they are extrapolated automatically.
+
+COMMENTS-FN and STRINGS-FN are functions of one argument, a color
+name or hex RGB string, which return the color having been
+modified as desired for comments or strings, respectively."
+  (interactive)
   (declare (indent defun))
   (when shuffle
     (setf colors (prism-shuffle colors)))
