@@ -337,10 +337,13 @@ For `font-lock-extend-region-functions'."
                           (ignore-errors
                             ;; Scan to the end of the current list delimiter.
                             (1- (scan-lists start 1 1)))
-                          limit
-                          ;; NOTE: Leaving out error for now.  Will try just returning nil to avoid hanging Emacs.
-                          ;; (error "Unable to find end")
-                          )))
+                          ;; If we can't find anything, return `limit'.  I'm not sure if this is the correct
+                          ;; thing to do, but it avoids an error (and possibly hanging Emacs) in the event of
+                          ;; an undiscovered bug.  Although, signaling an error might be better, because I
+                          ;; have seen "redisplay" errors related to font-lock in the messages buffer before,
+                          ;; which might mean that Emacs can handle that.  I think the important thing is not
+                          ;; to hang Emacs, to always either return nil or advance point to `limit'.
+                          limit)))
           (when end
             ;; End found: Try to fontify.
             (save-excursion
