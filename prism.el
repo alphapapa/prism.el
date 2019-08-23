@@ -151,11 +151,6 @@ Set automatically.")
 
 ;;;; Functions
 
-;; Silence byte-compiler for these special variables that are bound
-;; around `font-lock-extend-region-functions'.
-(defvar font-lock-beg)
-(defvar font-lock-end)
-
 (defun prism-after-theme (&rest args)
   "For `load-theme' advice.
 ARGS may be what `load-theme' and `disable-theme' expect.  Unless
@@ -163,6 +158,11 @@ NO-ENABLE (optional third argument, like `load-theme') is
 non-nil, call `prism-set-colors' to update `prism' faces."
   (unless (cl-third args)
     (prism-set-colors)))
+
+;; Silence byte-compiler for these special variables that are bound
+;; around `font-lock-extend-region-functions'.
+(defvar font-lock-beg)
+(defvar font-lock-end)
 
 (defun prism-extend-region ()
   "Extend region to the current sexp.
@@ -211,15 +211,11 @@ For `font-lock-extend-region-functions'."
 (defun prism-match (limit)
   "Matcher function for `font-lock-keywords'.
 Matches up to LIMIT."
-  ;; Trying to rewrite this function.
-  ;; NOTE: Be sure to return non-nil when a match is found.
-  ;; NOTE: It feels wrong, but since we're not using `re-search-forward' until
-  ;; after we've found the end by other means, we don't use the limit argument
-  ;; provided by `font-lock'.  Seems to work okay...
   (cl-macrolet ((parse-syntax ()
                               `(-setq (depth _ _ in-string-p comment-level-p)
                                  (syntax-ppss)))
                 (comment-p ()
+                           ;; This macro should only be used after `parse-syntax'.
                            `(or comment-level-p (looking-at-p (rx (syntax comment-start)))))
                 (face-at ()
                          ;; Return face to apply.  Should be called with point at `start'.
@@ -242,8 +238,7 @@ Matches up to LIMIT."
         (let ((parse-sexp-ignore-comments t)
               depth in-string-p comment-level-p comment-or-string-start start end
               found-comment-p found-string-p)
-          (while
-              ;; Skip to start of where we should match.
+          (while  ;; Skip to start of where we should match.
               (cond ((eolp)
                      (forward-line 1))
                     ((looking-at-p (rx blank))
@@ -284,9 +279,7 @@ Matches up to LIMIT."
                             ;; list, and if so, move just past it.
                             (cl-decf depth)
                             (1+ start))
-                          (when (and prism-comments
-                                     (or comment-level-p
-                                         (looking-at-p (rx (syntax comment-start)))))
+                          (when (and prism-comments (comment-p))
                             (forward-comment (buffer-size))
                             (setf found-comment-p t)
                             (point))
