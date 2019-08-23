@@ -102,62 +102,16 @@
   "Syntax table used by `prism-mode'.
 Set automatically.")
 
-;;;; Customization
-
-;; Defined as a custom variable later in the file, but declared here
-;; to silence the byte-compiler, because it's used in functions
-;; defined before the defcustom, because that defcustom calls said
-;; functions.  It's circular, but this breaks the loop.
+;; Defined as custom variables later in the file, but declared here to
+;; silence the byte-compiler, because they're used in `prism-set-colors',
+;; which is defined before their defcustoms.  It's circular, but this
+;; breaks the loop.
 (defvar prism-colors)
-
-(defgroup prism nil
-  "Disperse lisp forms into a spectrum of colors according to depth."
-  :group 'font-lock)
-
-(defcustom prism-num-faces 16
-  "Number of `prism' faces."
-  :type 'integer)
-
-(defcustom prism-color-attribute :foreground
-  "Face attribute set in `prism' faces."
-  :type '(choice (const :tag "Foreground" :foreground)
-                 (const :tag "Background" :background)))
-
-(defcustom prism-desaturations '(40 50 60)
-  "Default desaturation percentages applied to colors as depth increases.
-This need not be as long as the number of faces used, because
-it's extrapolated to the length of `prism-faces'."
-  :type '(repeat number))
-
-(defcustom prism-lightens '(0 5 10)
-  "Default lightening percentages applied to colors as depth increases.
-This need not be as long as the number of faces used, because
-it's extrapolated to the length of `prism-faces'."
-  :type '(repeat number))
-
-(defcustom prism-comments t
-  "Whether to colorize comments.
-Note that comments at depth 0 are not colorized, which preserves
-the appearance of e.g. commented Lisp headings."
-  :type 'boolean)
-
-(defcustom prism-comments-fn
-  (lambda (color)
-    (prism-blend color (face-attribute 'font-lock-comment-face :foreground) 0.25))
-  "Function which adjusts colors for comments.
-Receives one argument, a color name or hex RGB string."
-  :type 'function)
-
-(defcustom prism-strings t
-  "Whether to fontify strings."
-  :type 'boolean)
-
-(defcustom prism-strings-fn
-  (lambda (color)
-    (prism-blend color "white" 0.5))
-  "Function which adjusts colors for strings.
-Receives one argument, a color name or hex RGB string."
-  :type 'function)
+(defvar prism-desaturations)
+(defvar prism-lightens)
+(defvar prism-num-faces)
+(defvar prism-comments-fn)
+(defvar prism-strings-fn)
 
 ;;;; Minor mode
 
@@ -529,10 +483,77 @@ necessary."
         (-snoc new-list (-last-item list))
       new-list)))
 
-;;;; Further customization
+;;;; Customization
 
-;; These are at the bottom because one of the setters calls one of the
-;; functions above.
+;; These are at the bottom because the setters call `prism-set-faces',
+;; which is defined above.
+
+(defgroup prism nil
+  "Disperse lisp forms into a spectrum of colors according to depth."
+  :group 'font-lock)
+
+(defcustom prism-num-faces 16
+  "Number of `prism' faces."
+  :type 'integer
+  :set (lambda (option value)
+         (set-default option value)
+         (prism-set-colors)))
+
+(defcustom prism-color-attribute :foreground
+  "Face attribute set in `prism' faces."
+  :type '(choice (const :tag "Foreground" :foreground)
+                 (const :tag "Background" :background))
+  :set (lambda (option value)
+         (set-default option value)
+         (prism-set-colors)))
+
+(defcustom prism-desaturations '(40 50 60)
+  "Default desaturation percentages applied to colors as depth increases.
+This need not be as long as the number of faces used, because
+it's extrapolated to the length of `prism-faces'."
+  :type '(repeat number)
+  :set (lambda (option value)
+         (set-default option value)
+         (prism-set-colors)))
+
+(defcustom prism-lightens '(0 5 10)
+  "Default lightening percentages applied to colors as depth increases.
+This need not be as long as the number of faces used, because
+it's extrapolated to the length of `prism-faces'."
+  :type '(repeat number)
+  :set (lambda (option value)
+         (set-default option value)
+         (prism-set-colors)))
+
+(defcustom prism-comments t
+  "Whether to colorize comments.
+Note that comments at depth 0 are not colorized, which preserves
+the appearance of e.g. commented Lisp headings."
+  :type 'boolean)
+
+(defcustom prism-comments-fn
+  (lambda (color)
+    (prism-blend color (face-attribute 'font-lock-comment-face :foreground) 0.25))
+  "Function which adjusts colors for comments.
+Receives one argument, a color name or hex RGB string."
+  :type 'function
+  :set (lambda (option value)
+         (set-default option value)
+         (prism-set-colors)))
+
+(defcustom prism-strings t
+  "Whether to fontify strings."
+  :type 'boolean)
+
+(defcustom prism-strings-fn
+  (lambda (color)
+    (prism-blend color "white" 0.5))
+  "Function which adjusts colors for strings.
+Receives one argument, a color name or hex RGB string."
+  :type 'function
+  :set (lambda (option value)
+         (set-default option value)
+         (prism-set-colors)))
 
 (defcustom prism-colors
   (list 'font-lock-comment-face 'font-lock-function-name-face
