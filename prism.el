@@ -172,11 +172,21 @@ Receives one argument, a color name or hex RGB string."
             (prism-set-colors))
           (setq prism-syntax-table (prism-syntax-table (syntax-table)))
           (font-lock-add-keywords nil keywords 'append)
+          (font-lock-flush)
           (add-hook 'font-lock-extend-region-functions #'prism-extend-region nil 'local)
-          (font-lock-flush))
+          (unless (advice-member-p #'prism-after-theme #'load-theme)
+            ;; Don't add the advice again, because this mode is
+            ;; buffer-local, but the advice is global.
+            (advice-add #'load-theme :after #'prism-after-theme)
+            (advice-add #'disable-theme :after #'prism-after-theme)))
       (font-lock-remove-keywords nil keywords)
-      (remove-hook 'font-lock-extend-region-functions #'prism-extend-region 'local)
-      (prism-remove-faces))))
+      (prism-remove-faces)
+      (unless (--any (buffer-local-value 'prism-mode it)
+                     (buffer-list))
+        ;; Don't remove advice if `prism-mode' is still active in any buffers.
+        (advice-remove #'load-theme #'prism-after-theme)
+        (advice-remove #'disable-theme #'prism-after-theme))
+      (remove-hook 'font-lock-extend-region-functions #'prism-extend-region 'local))))
 
 ;;;; Functions
 
@@ -184,6 +194,13 @@ Receives one argument, a color name or hex RGB string."
 ;; around `font-lock-extend-region-functions'.
 (defvar font-lock-beg)
 (defvar font-lock-end)
+
+(defun prism-after-theme (&rest args)
+  "For `load-theme' advice.
+Unless NO-ENABLE (optional third argument, like `load-theme') is
+non-nil, call `prism-set-colors' to update `prism' faces."
+  (unless (cl-third args)
+    (prism-set-colors)))
 
 (defun prism-extend-region ()
   "Extend region to the current sexp.
