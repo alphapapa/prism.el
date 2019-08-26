@@ -6,13 +6,16 @@
 
 # [[https://melpa.org/#/package-name][file:https://melpa.org/packages/prism-badge.svg]] [[https://stable.melpa.org/#/package-name][file:https://stable.melpa.org/packages/prism-badge.svg]]
 
-=prism= disperses lisp forms (and other syntax bounded by parentheses, brackets, and braces) into a spectrum of color by depth.  It's similar to =rainbow-blocks=, but it respects existing non-color face properties, and allows flexible configuration of faces and colors.  It also optionally colorizes strings and/or comments by code depth in a similar, customizable way.
+=prism= disperses lisp forms (and other languages) into a spectrum of color by depth.  It's similar to =rainbow-blocks=, but it respects existing non-color face properties, and allows flexible configuration of faces and colors.  It also optionally colorizes strings and/or comments by code depth in a similar, customizable way.
 
 * Contents                                                         :noexport:
 :PROPERTIES:
 :TOC:      this
 :END:
   -  [[#screenshots][Screenshots]]
+    -  [[#lisp-and-c-like-languages][Lisp and C-like languages]]
+    -  [[#whitespace-sensitive-languages][Whitespace-sensitive languages]]
+    -  [[#customizable-colors][Customizable colors]]
   -  [[#comparisons][Comparisons]]
   -  [[#installation][Installation]]
   -  [[#usage][Usage]]
@@ -20,9 +23,8 @@
   -  [[#credits][Credits]]
 
 * Screenshots
-:PROPERTIES:
-:TOC:      0
-:END:
+
+** Lisp and C-like languages
 
 One of the benefits of =prism= is making it easy to see which list elements are in.  For example, in this excerpt from =org-get-entries-from-diary= from =org-agenda.el=, the =funcall='s first argument is an unusually indented =if= form, and the indentation nearly aligns the =funcall='s second argument, =date=, at the column where the =if='s /else/ clause would usually be.  But with depth-based colorization, it's easy to see that =date= and =1= are arguments to =funcall=, not part of the =if= form.
 
@@ -30,11 +32,11 @@ It's also easy to distinguish the =diary-list-entries-hook= variable's value for
 
 [[images/one-armed-if.png]]
 
-It may also be useful for non-Lisp buffers.  For example, here's an example of JSON in =prism-mode=:
+It is also useful for non-Lisp languages.  For example, here's an example of JSON in =prism-mode=:
 
 [[images/json.png]]
 
-And here's an Emacs C function:
+Here's an Emacs C function:
 
 [[images/c.png]]
 
@@ -45,6 +47,20 @@ It might even help save you from deeply nested, callback-style JavaScript, turni
 Into this (using theme =doom-outrun-electric=).  Note how the =bind= is the same color as the =function= keyword and braces that it corresponds to:
 
 [[images/js-after.png]]
+
+** Whitespace-sensitive languages
+
+For whitespace-sensitive languages, =prism-whitespace-mode= determines depth by a combination of indentation and list nesting.  For example, Python:
+
+[[images/python.png]]
+
+This example shows Python with =prism-comments= enabled (showing theme =doom-challenger-deep=):
+
+[[images/python-doom-challenger-deep.png]]
+
+It even works in Haskell (showing theme =doom-molokai=):
+
+[[images/haskell-doom-molokai.png]]
 
 ** Customizable colors
 
@@ -114,7 +130,7 @@ The easiest way is to use [[https://framagit.org/steckerhalter/quelpa-use-packag
 :TOC:      0
 :END:
 
-1.  Run command ~prism-mode~ to enable it in the current buffer.
+1.  Run command =prism-mode= to enable it in the current buffer.  For whitespace-significant languages like Python, use =prism-whitespace-mode= instead.
 2.  Enjoy.
 
 When a theme is loaded or disabled, colors are automatically updated.

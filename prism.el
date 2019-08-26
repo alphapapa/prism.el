@@ -107,6 +107,12 @@
   "Syntax table used by `prism-mode'.
 Set automatically.")
 
+(defvar-local prism-whitespace-indent-offset 4
+  "Number of spaces which represents a semantic level of indentation.
+Set automatically by `prism-whitespace-mode'.  Should be set
+appropriately for the current mode, e.g. `python-indent-offset'
+for `python-mode'.")
+
 ;; Defined as custom variables later in the file, but declared here to
 ;; silence the byte-compiler, because they're used in `prism-set-colors',
 ;; which is defined before their defcustoms.  It's circular, but this
@@ -123,13 +129,24 @@ Set automatically.")
 
 ;;;; Minor mode
 
+(defun prism-active-mode (without-mode)
+  "Return any already-active `prism' modes in this buffer, not including WITHOUT-MODE."
+  (cl-loop for mode in (remove without-mode '(prism-mode prism-whitespace-mode))
+           when (symbol-value mode)
+           return mode))
+
 ;;;###autoload
 (define-minor-mode prism-mode
-  "Disperse lisp forms into a spectrum of colors according to depth."
+  "Disperse lisp forms (and other non-whitespace-sensitive syntax) into a spectrum of colors according to depth.
+Depth is determined by list nesting.  Suitable for Lisp, C-like
+languages, etc."
   :global nil
   (let ((keywords '((prism-match 0 prism-face prepend))))
     (if prism-mode
         (progn
+          (when-let* ((active-mode (prism-active-mode 'prism-mode)))
+            (setf prism-mode nil)
+            (user-error "%s is already active in this buffer" active-mode))
           (unless prism-faces
             (prism-set-colors))
           (setq prism-syntax-table (prism-syntax-table (syntax-table)))
@@ -143,9 +160,48 @@ Set automatically.")
             (advice-add #'disable-theme :after #'prism-after-theme)))
       (font-lock-remove-keywords nil keywords)
       (prism-remove-faces)
-      (unless (--any (buffer-local-value 'prism-mode it)
+      (unless (--any (or (buffer-local-value 'prism-mode it)
+                         (buffer-local-value 'prism-whitespace-mode it))
                      (buffer-list))
-        ;; Don't remove advice if `prism-mode' is still active in any buffers.
+        ;; Don't remove advice if `prism' is still active in any buffers.
+        (advice-remove #'load-theme #'prism-after-theme)
+        (advice-remove #'disable-theme #'prism-after-theme))
+      (remove-hook 'font-lock-extend-region-functions #'prism-extend-region 'local))))
+
+;;;###autoload
+(define-minor-mode prism-whitespace-mode
+  "Disperse whitespace-sensitive syntax into a spectrum of colors according to depth.
+Depth is determined by indentation and list nesting.  Suitable
+for Python, Haskell, etc."
+  :global nil
+  (let ((keywords '((prism-match-whitespace 0 prism-face prepend))))
+    (if prism-whitespace-mode
+        (progn
+          (when-let* ((active-mode (prism-active-mode 'prism-whitespace-mode)))
+            (setf prism-whitespace-mode nil)
+            (user-error "%s is already active in this buffer" active-mode))
+          (unless prism-faces
+            (prism-set-colors))
+          (setf prism-syntax-table (prism-syntax-table (syntax-table))
+                prism-whitespace-indent-offset (let ((indent (or (alist-get major-mode prism-whitespace-mode-indents)
+                                                                 (alist-get t prism-whitespace-mode-indents))))
+                                                 (cl-etypecase indent
+                                                   (symbol (symbol-value indent))
+                                                   (integer indent))))
+          (font-lock-add-keywords nil keywords 'append)
+          (font-lock-flush)
+          (add-hook 'font-lock-extend-region-functions #'prism-extend-region nil 'local)
+          (unless (advice-member-p #'prism-after-theme #'load-theme)
+            ;; Don't add the advice again, because this mode is
+            ;; buffer-local, but the advice is global.
+            (advice-add #'load-theme :after #'prism-after-theme)
+            (advice-add #'disable-theme :after #'prism-after-theme)))
+      (font-lock-remove-keywords nil keywords)
+      (prism-remove-faces)
+      (unless (--any (or (buffer-local-value 'prism-mode it)
+                         (buffer-local-value 'prism-whitespace-mode it))
+                     (buffer-list))
+        ;; Don't remove advice if `prism' is still active in any buffers.
         (advice-remove #'load-theme #'prism-after-theme)
         (advice-remove #'disable-theme #'prism-after-theme))
       (remove-hook 'font-lock-extend-region-functions #'prism-extend-region 'local))))
@@ -314,6 +370,155 @@ Matches up to LIMIT."
                     (when (re-search-forward (rx (syntax string-quote)) end t)
                       (setf end (match-beginning 0))))))
             (if (and (comment-p) (= 0 depth))
+                (setf prism-face nil)
+              (setf prism-face (face-at)))
+            (goto-char end)
+            (set-match-data (list start end (current-buffer)))
+            ;; Be sure to return non-nil!
+            t))))))
+
+(defun prism-match-whitespace (limit)
+  "Matcher function for `font-lock-keywords' in whitespace-sensitive buffers.
+Matches up to LIMIT.  Requires `prism-indent-offset' be set
+appropriately, e.g. to `python-indent-offset' for `python-mode'."
+  (cl-macrolet ((parse-syntax ()
+                              `(-setq (list-depth _ _ in-string-p comment-level-p _ _ _ comment-or-string-start)
+                                 (syntax-ppss)))
+                (indent-depth ()
+                              `(/ (current-indentation) prism-whitespace-indent-offset))
+                (depth-at ()
+                          ;; Yes, this is entirely too complicated--just like Python's syntax in
+                          ;; comparison to Lisp.  But, "Eww, all those parentheses!"  they say.
+                          ;; Well, all those parentheses avoid lots of special cases like these.
+                          `(pcase list-depth
+                             (0 (cond ((looking-at-p (rx (syntax close-parenthesis) eol))
+                                       (save-excursion
+                                         (forward-char 1)
+                                         (backward-sexp 1)
+                                         (+ (nth 0 (syntax-ppss)) (indent-depth))))
+                                      ((looking-back (rx (syntax close-parenthesis)) (1- (point)))
+                                       (save-excursion
+                                         (backward-sexp 1)
+                                         (+ (nth 0 (syntax-ppss)) (indent-depth))))
+                                      (t (indent-depth))))
+                             (_ (save-excursion
+                                  ;; Exit lists back to depth 0.
+                                  (goto-char (scan-lists (point) -1 (nth 0 (syntax-ppss))))
+                                  (+ list-depth (indent-depth))))))
+                (comment-p ()
+                           ;; This macro should only be used after `parse-syntax'.
+                           `(or comment-level-p (looking-at-p (rx (or (syntax comment-start)
+                                                                      (syntax comment-delimiter))))))
+                (face-at ()
+                         ;; Return face to apply.  Should be called with point at `start'.
+                         `(let ((depth (depth-at)))
+                            (cond ((comment-p)
+                                   (pcase depth
+                                     (0 'font-lock-comment-face)
+                                     (_ (if prism-faces-comments
+                                            (alist-get depth prism-faces-comments)
+                                          (alist-get depth prism-faces)))))
+                                  ((or in-string-p (looking-at-p (rx (or (syntax string-quote)
+                                                                         (syntax string-delimiter)))))
+                                   (pcase depth
+                                     (0 'font-lock-string-face)
+                                     (_ (if prism-faces-strings
+                                            (alist-get depth prism-faces-strings)
+                                          (alist-get depth prism-faces)))))
+                                  (t (alist-get depth prism-faces))))))
+    (with-syntax-table prism-syntax-table
+      (unless (eobp)
+        ;; Not at end-of-buffer: start matching.
+        (let ((parse-sexp-ignore-comments t)
+              list-depth in-string-p comment-level-p comment-or-string-start start end
+              found-comment-p found-string-p)
+          (while ;; Skip to start of where we should match.
+              (and (not (eobp))
+                   (cond ((eolp)
+                          (forward-line 1))
+                         ((looking-at-p (rx blank))
+                          (forward-whitespace 1))
+                         ((unless prism-strings
+                            (when (looking-at-p (rx (syntax string-quote)))
+                              ;; At a string: skip it.
+                              (forward-sexp))))
+                         ((unless prism-comments
+                            (forward-comment (buffer-size)))))))
+          (parse-syntax)
+          (when in-string-p
+            ;; In a string: go back to its beginning (before its delimiter).
+            ;; It would be nice to leave this out and rely on the check in
+            ;; the `while' above, but if partial fontification starts inside
+            ;; a string, we have to handle that.
+            ;; NOTE: If a string contains a Lisp comment (e.g. in
+            ;; `custom-save-variables'), `in-string-p' will be non-nil, but
+            ;; `comment-or-string-start' will be nil.  I don't know if this
+            ;; is a bug in `parse-partial-sexp', but we have to handle it.
+            (when comment-or-string-start
+              (goto-char comment-or-string-start)
+              (unless prism-strings
+                (forward-sexp))
+              (parse-syntax)))
+          ;; Set start and end positions.
+          (setf start (point)
+                ;; I don't know if `ignore-errors' is going to be slow, but since
+                ;; `scan-lists' and `scan-sexps' signal errors, it seems necessary if we want
+                ;; to use them (and they seem to be cleaner to use than regexp searches).
+                end (save-excursion
+                      (or (when (and prism-comments (comment-p))
+                            (setf found-comment-p t)
+                            (when comment-or-string-start
+                              (goto-char comment-or-string-start))
+                            ;; We must only skip one comment, because before there is
+                            ;; non-comment, non-whitespace text, the indent depth might change.
+                            (forward-comment 1)
+                            (point))
+                          (when (looking-at-p (rx (syntax close-parenthesis)))
+                            ;; I'd like to just use `scan-lists', but I can't find a way around this initial check.
+                            ;; The code (scan-lists start 1 1), when called just inside a list, scans past the end
+                            ;; of it, to just outside it, which is not what we want, because we want to highlight
+                            ;; the closing paren with the shallower depth.  But if we just back up one character,
+                            ;; we never exit the list.  So we have to check whether we're looking at the close of a
+                            ;; list, and if so, move just past it.
+                            (cl-decf list-depth)
+                            (1+ start))
+                          (when (looking-at-p (rx (or (syntax string-quote)
+                                                      (syntax string-delimiter))))
+                            (forward-sexp 1)
+                            (setf found-string-p t)
+                            (point))
+                          ;; Don't go past the end of the line.
+                          (apply #'min
+                                 (-non-nil
+                                  (list
+                                   (or (ignore-errors
+                                         ;; Scan to the past the delimiter of the next deeper list.
+                                         (scan-lists start 1 -1))
+                                       (ignore-errors
+                                         ;; Scan to the end of the current list delimiter.
+                                         (1- (scan-lists start 1 1))))
+                                   (line-end-position))))
+                          ;; If we can't find anything, return `limit'.  I'm not sure if this is the correct
+                          ;; thing to do, but it avoids an error (and possibly hanging Emacs) in the event of
+                          ;; an undiscovered bug.  Although, signaling an error might be better, because I
+                          ;; have seen "redisplay" errors related to font-lock in the messages buffer before,
+                          ;; which might mean that Emacs can handle that.  I think the important thing is not
+                          ;; to hang Emacs, to always either return nil or advance point to `limit'.
+                          limit)))
+          (when end
+            ;; End found: Try to fontify.
+            (save-excursion
+              (or (unless (or found-string-p found-comment-p)
+                    ;; Neither in a string nor looking at nor in a comment: set `end' to any comment found before it.
+                    (when (re-search-forward (rx (syntax comment-start)) end t)
+                      (setf end (match-beginning 0))))
+                  (unless (or found-comment-p found-string-p)
+                    ;; Neither in nor looking at a comment: set `end' to any string or comment found before it.
+                    (when (re-search-forward (rx (or (syntax string-quote)
+                                                     (syntax string-delimiter)))
+                                             end t)
+                      (setf end (match-beginning 0))))))
+            (if (and (comment-p) (= 0 (depth-at)))
                 (setf prism-face nil)
               (setf prism-face (face-at)))
             (goto-char end)
@@ -608,6 +813,19 @@ Receives one argument, a color name or hex RGB string."
   ;; and get confused.  Define this group after all other `defcustom's
   ;; so the "current group" isn't changed before they're all defined.
   :group 'prism)
+
+(defcustom prism-whitespace-mode-indents
+  (list (cons 'python-mode 'python-indent-offset)
+        (cons 'haskell-mode 'haskell-indentation-left-offset)
+        (cons t 4))
+  "Alist mapping major modes to indentation offsets for `prism-whitespace-mode'.
+Each key should be a major mode function symbol, and the value
+either a variable whose value to use or an integer number of
+spaces.  The last cell is the default, and its key should be t."
+  :type '(alist :key-type (choice (const :tag "Default" t)
+                                  (symbol :tag "Major mode"))
+                :value-type (choice (variable :tag "Value of variable")
+                                    (integer :tag "Number of spaces"))))
 
 ;;;; Footer
 
