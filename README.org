@@ -50,7 +50,7 @@ Into this (using theme =doom-outrun-electric=).  Note how the =bind= is the same
 
 ** Whitespace-sensitive languages
 
-For whitespace-sensitive languages, =prism-whitespace-mode= determines depth by a combination of indentation and list nesting.  For example, Python:
+For whitespace-sensitive languages, =prism-whitespace-mode= determines depth by a combination of indentation and list nesting.  For example, Python (showing theme =doom-vibrant= with these faces set in variable =prism-colors=: =font-lock-type-face=, =font-lock-function-name-face=, =font-lock-constant-face=, and =font-lock-keyword-face=):
 
 [[images/python.png]]
 
