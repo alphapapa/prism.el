@@ -379,7 +379,7 @@ Matches up to LIMIT."
 
 (defun prism-match-whitespace (limit)
   "Matcher function for `font-lock-keywords' in whitespace-sensitive buffers.
-Matches up to LIMIT.  Requires `prism-indent-offset' be set
+Matches up to LIMIT.  Requires `prism-whitespace-indent-offset' be set
 appropriately, e.g. to `python-indent-offset' for `python-mode'."
   (cl-macrolet ((parse-syntax ()
                               `(-setq (list-depth _ _ in-string-p comment-level-p _ _ _ comment-or-string-start)
