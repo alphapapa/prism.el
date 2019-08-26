@@ -88,10 +88,6 @@ You can shuffle the order of the colors until you find a pattern you like:
 
 [[images/shuffled.png]]
 
-You can even set the background color instead (similar to [[https://github.com/seanirby/rainbow-blocks-bg][rainbow-blocks-bg]], but not optimized for this case yet):
-
-[[images/background.png]]
-
 * Comparisons
 
 =prism= is much like [[https://github.com/istib/rainbow-blocks][rainbow-blocks]], but it differs in a few ways:
