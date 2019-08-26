@@ -20,6 +20,9 @@
   -  [[#credits][Credits]]
 
 * Screenshots
+:PROPERTIES:
+:TOC:      0
+:END:
 
 One of the benefits of =prism= is making it easy to see which list elements are in.  For example, in this excerpt from =org-get-entries-from-diary= from =org-agenda.el=, the =funcall='s first argument is an unusually indented =if= form, and the indentation nearly aligns the =funcall='s second argument, =date=, at the column where the =if='s /else/ clause would usually be.  But with depth-based colorization, it's easy to see that =date= and =1= are arguments to =funcall=, not part of the =if= form.
 
@@ -42,6 +45,8 @@ It might even help save you from deeply nested, callback-style JavaScript, turni
 Into this (using theme =doom-outrun-electric=).  Note how the =bind= is the same color as the =function= keyword and braces that it corresponds to:
 
 [[images/js-after.png]]
+
+** Customizable colors
 
 It's easy to adjust the colors with ~prism-set-colors~.  Here are some examples.
 
