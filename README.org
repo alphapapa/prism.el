@@ -35,6 +35,14 @@ And here's an Emacs C function:
 
 [[images/c.png]]
 
+It might even help save you from deeply nested, callback-style JavaScript, turning this:
+
+[[images/js-before.png]]
+
+Into this (using theme =doom-outrun-electric=).  Note how the =bind= is the same color as the =function= keyword and braces that it corresponds to:
+
+[[images/js-after.png]]
+
 It's easy to adjust the colors with ~prism-set-colors~.  Here are some examples.
 
 You can use just a few faces in combination with the =desaturations= and =lightens= to create a palette of colors:
