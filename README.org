@@ -6,7 +6,7 @@
 
 # [[https://melpa.org/#/package-name][file:https://melpa.org/packages/prism-badge.svg]] [[https://stable.melpa.org/#/package-name][file:https://stable.melpa.org/packages/prism-badge.svg]]
 
-=prism= disperses lisp forms into a spectrum of color by depth.  It's similar to =rainbow-blocks=, but it respects existing non-color face properties, and allows flexible configuration of faces and colors.  It also optionally colorizes strings and/or comments by code depth in a similar, customizable way.
+=prism= disperses lisp forms (and other syntax bounded by parentheses, brackets, and braces) into a spectrum of color by depth.  It's similar to =rainbow-blocks=, but it respects existing non-color face properties, and allows flexible configuration of faces and colors.  It also optionally colorizes strings and/or comments by code depth in a similar, customizable way.
 
 * Contents                                                         :noexport:
 :PROPERTIES:
@@ -26,6 +26,14 @@ One of the benefits of =prism= is making it easy to see which list elements are 
 It's also easy to distinguish the =diary-list-entries-hook= variable's value form from other variables, and the =entries= variable's different color clearly shows that it has no value form.
 
 [[images/one-armed-if.png]]
+
+It may also be useful for non-Lisp buffers.  For example, here's an example of JSON in =prism-mode=:
+
+[[images/json.png]]
+
+And here's an Emacs C function:
+
+[[images/c.png]]
 
 It's easy to adjust the colors with ~prism-set-colors~.  Here are some examples.
 
@@ -71,14 +79,6 @@ You can shuffle the order of the colors until you find a pattern you like:
 You can even set the background color instead (similar to [[https://github.com/seanirby/rainbow-blocks-bg][rainbow-blocks-bg]], but not optimized for this case yet):
 
 [[images/background.png]]
-
-It may also be useful for non-Lisp buffers.  For example, here's an example of JSON in =prism-mode=:
-
-[[images/json.png]]
-
-And here's an Emacs C function:
-
-[[images/c.png]]
 
 * Comparisons
 

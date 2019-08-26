@@ -1,4 +1,4 @@
-;;; prism.el --- Disperse lisp forms into a spectrum of color by depth  -*- lexical-binding: t; -*-
+;;; prism.el --- Disperse lisp forms (and other languages) into a spectrum of color by depth  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Adam Porter
 
@@ -25,8 +25,9 @@
 
 ;;; Commentary:
 
-;; `prism' disperses Lisp forms into a spectrum of color by depth.
-;; It's similar to `rainbow-blocks', but it respects existing
+;; `prism' disperses Lisp forms (and other syntax bounded by
+;; parentheses, brackets, and braces) into a spectrum of color by
+;; depth.  It's similar to `rainbow-blocks', but it respects existing
 ;; non-color face properties, and allows flexible configuration of
 ;; faces and colors.  It also optionally colorizes strings and/or
 ;; comments by code depth in a similar, customizable way.
