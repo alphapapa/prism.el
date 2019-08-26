@@ -72,6 +72,10 @@ You can even set the background color instead (similar to [[https://github.com/s
 
 [[images/background.png]]
 
+It may also be useful for non-Lisp buffers.  For example, here's an example of JSON in =prism-mode=:
+
+[[images/json.png]]
+
 * Comparisons
 
 =prism= is much like [[https://github.com/istib/rainbow-blocks][rainbow-blocks]], but it differs in a few ways:
