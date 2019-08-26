@@ -76,6 +76,10 @@ It may also be useful for non-Lisp buffers.  For example, here's an example of J
 
 [[images/json.png]]
 
+And here's an Emacs C function:
+
+[[images/c.png]]
+
 * Comparisons
 
 =prism= is much like [[https://github.com/istib/rainbow-blocks][rainbow-blocks]], but it differs in a few ways:
