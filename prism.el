@@ -416,20 +416,25 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                                  (syntax-ppss)))
                 (indent-depth ()
                               `(/ (current-indentation) prism-indent-offset))
+                (list-depth ()
+                            `(nth 0 (syntax-ppss)))
                 (depth-at ()
                           ;; Yes, this is entirely too complicated--just like Python's syntax in
                           ;; comparison to Lisp.  But, "Eww, all those parentheses!"  they say.
                           ;; Well, all those parentheses avoid lots of special cases like these.
+                          ;; NOTE: The difference between (list-depth) and `list-depth',
+                          ;; the latter of which is pre-computed at `start'.  Sometimes
+                          ;; it's necessary to recompute it.
                           `(pcase list-depth
                              (0 (cond ((looking-at-p (rx (syntax close-parenthesis) eol))
                                        (save-excursion
                                          (forward-char 1)
                                          (backward-sexp 1)
-                                         (+ (nth 0 (syntax-ppss)) (indent-depth))))
+                                         (+ (list-depth) (indent-depth))))
                                       ((looking-back (rx (syntax close-parenthesis)) (1- (point)))
                                        (save-excursion
                                          (backward-sexp 1)
-                                         (+ (nth 0 (syntax-ppss)) (indent-depth))))
+                                         (+ (list-depth) (indent-depth))))
                                       (t (indent-depth))))
                              (_ (cond ((looking-back (rx ":" (0+ blank) (1+ (or "\n" space)))
                                                      (save-excursion
@@ -438,16 +443,21 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                                        ;; Non-braced block, e.g. after "case CONDITION:".
                                        (1+ (save-excursion
                                              ;; Exit lists back to depth 0.
-                                             (goto-char (scan-lists (point) -1 (nth 0 (syntax-ppss))))
+                                             (goto-char (scan-lists (point) -1 (list-depth)))
                                              (+ list-depth (indent-depth)))))
                                       (prism-depth-exit-lists
-                                       ;; Back out of lists to determine depth (e.g. Python)
+                                       ;; Back out of lists to determine depth.  e.g. Python function
+                                       ;; bodies and if/elif/else clauses are not inside lists.
                                        (save-excursion
                                          ;; Exit lists back to depth 0.
-                                         (goto-char (scan-lists (point) -1 (nth 0 (syntax-ppss))))
+                                         (goto-char (scan-lists (point) -1 (list-depth)))
                                          (+ list-depth (indent-depth))))
                                       (t
-                                       ;; Determine depth at point instead of after backing out of lists (e.g. shell scripts).
+                                       ;; Determine depth at point instead of after backing out of
+                                       ;; lists.  e.g. the body of a shell script function is in a
+                                       ;; list because of the braces, but clauses of if/then/else
+                                       ;; forms inside it are at the same list depth, so depth
+                                       ;; must be determined without backing out of lists.
                                        (+ list-depth (indent-depth)))))))
                 (comment-p ()
                            ;; This macro should only be used after `parse-syntax'.
