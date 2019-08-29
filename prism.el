@@ -113,6 +113,11 @@ Set automatically by `prism-non-lisp-mode'.  Should be set
 appropriately for the current mode, e.g. `python-indent-offset'
 for `python-mode'.")
 
+(defvar-local prism-depth-exit-lists t
+  "When non-nil, determine depth by backing out of any lists.
+Should be enabled for, e.g. Python, and disabled for, e.g. shell
+scripts.")
+
 ;; Defined as custom variables later in the file, but declared here to
 ;; silence the byte-compiler, because they're used in `prism-set-colors',
 ;; which is defined before their defcustoms.  It's circular, but this
@@ -421,10 +426,15 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                                              ;; Exit lists back to depth 0.
                                              (goto-char (scan-lists (point) -1 (nth 0 (syntax-ppss))))
                                              (+ list-depth (indent-depth)))))
-                                      (t (save-excursion
-                                           ;; Exit lists back to depth 0.
-                                           (goto-char (scan-lists (point) -1 (nth 0 (syntax-ppss))))
-                                           (+ list-depth (indent-depth))))))))
+                                      (prism-depth-exit-lists
+                                       ;; Back out of lists to determine depth (e.g. Python)
+                                       (save-excursion
+                                         ;; Exit lists back to depth 0.
+                                         (goto-char (scan-lists (point) -1 (nth 0 (syntax-ppss))))
+                                         (+ list-depth (indent-depth))))
+                                      (t
+                                       ;; Determine depth at point instead of after backing out of lists (e.g. shell scripts).
+                                       (+ list-depth (indent-depth)))))))
                 (comment-p ()
                            ;; This macro should only be used after `parse-syntax'.
                            `(or comment-level-p (looking-at-p (rx (or (syntax comment-start)
