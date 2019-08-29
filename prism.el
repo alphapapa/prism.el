@@ -612,7 +612,14 @@ modified as desired for comments or strings, respectively."
                         (prism-modify-colors :num num
                                              :desaturations desaturations
                                              :lightens lightens
-                                             :colors))))
+                                             :colors)
+                        ;; Use only two digits per component.  HTML export of code (e.g. with Org
+                        ;; Export, htmlize, etc.)  doesn't work well with colors like "#01234567890a",
+                        ;; even if Emacs can handle them internally.  Maybe it's Web browsers that
+                        ;; can't handle them.  Anyway, we shouldn't use them if it breaks that.
+                        (--map (--> (color-name-to-rgb it)
+                                    (-let (((r g b) it))
+                                      (color-rgb-to-hex r g b 2)))))))
       (setf prism-faces (faces colors)
             prism-faces-strings (faces colors "strings" strings-fn)
             prism-faces-comments (faces colors "comments" comments-fn))
