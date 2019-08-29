@@ -261,32 +261,32 @@ non-nil, call `prism-set-colors' to update `prism' faces."
   "Extend region to the current sexp.
 For `font-lock-extend-region-functions'."
   (let (changed-p)
-    (unless (= 0 (nth 0 (syntax-ppss)))
-      ;; Not at top level: extend region backward/up.
-      (let ((orig-pos (point)))
-        (save-excursion
-          (when (ignore-errors
-                  (backward-up-list 1 t t))
-            (setf font-lock-beg (point))
-            (unless (= font-lock-beg orig-pos)
-              (setf changed-p t))))))
-    (save-excursion
-      (goto-char font-lock-end)
-      (unless (= 0 (nth 0 (syntax-ppss)))
-        ;; Not at top level: extend region forward.
-        (let ((end (save-excursion
-                     (ignore-errors
-                       ;; This function signals an error, (scan-error "Containing
-                       ;; expression ends prematurely"), when called with point
-                       ;; immediately before the closing paren of an sexp.  In that
-                       ;; case, we're already at the end, so ignore the error.
-                       ;; FIXME: Maybe use something other than `thing-at-point--end-of-sexp',
-                       ;; although its implementation looks very simple.
-                       (thing-at-point--end-of-sexp))
-                     (point))))
-          (when (> end font-lock-end)
-            (setf font-lock-end end
-                  changed-p t)))))
+    ;; (unless (= 0 (nth 0 (syntax-ppss)))
+    ;;   ;; Not at top level: extend region backward/up.
+    ;;   (let ((orig-pos (point)))
+    ;;     (save-excursion
+    ;;       (when (ignore-errors
+    ;;               (backward-up-list 1 t t))
+    ;;         (setf font-lock-beg (point))
+    ;;         (unless (= font-lock-beg orig-pos)
+    ;;           (setf changed-p t))))))
+    ;; (save-excursion
+    ;;   (goto-char font-lock-end)
+    ;;   (unless (= 0 (nth 0 (syntax-ppss)))
+    ;;     ;; Not at top level: extend region forward.
+    ;;     (let ((end (save-excursion
+    ;;                  (ignore-errors
+    ;;                    ;; This function signals an error, (scan-error "Containing
+    ;;                    ;; expression ends prematurely"), when called with point
+    ;;                    ;; immediately before the closing paren of an sexp.  In that
+    ;;                    ;; case, we're already at the end, so ignore the error.
+    ;;                    ;; FIXME: Maybe use something other than `thing-at-point--end-of-sexp',
+    ;;                    ;; although its implementation looks very simple.
+    ;;                    (thing-at-point--end-of-sexp))
+    ;;                  (point))))
+    ;;       (when (> end font-lock-end)
+    ;;         (setf font-lock-end end
+    ;;               changed-p t)))))
     changed-p))
 
 (defun prism-syntax-table (syntax-table)
