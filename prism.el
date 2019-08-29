@@ -850,6 +850,7 @@ Receives one argument, a color name or hex RGB string."
         (cons 'js-mode 'prism-non-lisp-mode)
         (cons 'json-mode 'prism-non-lisp-mode)
         (cons 'lisp-mode 'prism-lisp-mode)
+        (cons 'python-mode 'prism-non-lisp-mode)
         (cons 'sh-mode 'prism-non-lisp-mode)
         (cons t 'prism-non-lisp-mode))
   "Alist mapping major modes to `prism' modes.
