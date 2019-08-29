@@ -218,6 +218,20 @@ languages, Haskell, etc."
   "Remove `prism-extend-region' from `font-lock-extend-region-functions'."
   (remove-hook 'font-lock-extend-region-functions #'prism-extend-region 'local))
 
+;;;; Commands
+
+(defun prism-toggle-comments ()
+  "Toggle colorizing of comments in current buffer."
+  (interactive)
+  (setf prism-comments (not prism-comments))
+  (font-lock-flush))
+
+(defun prism-toggle-strings ()
+  "Toggle colorizing of strings in current buffer."
+  (interactive)
+  (setf prism-strings (not prism-strings))
+  (font-lock-flush))
+
 ;;;; Functions
 
 (defun prism-after-theme (&rest args)
