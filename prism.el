@@ -290,23 +290,24 @@ Matches up to LIMIT."
                                         (alist-get depth prism-faces)))))
                                 (t (alist-get depth prism-faces)))))
     (with-syntax-table prism-syntax-table
-      (unless (eobp)
-        ;; Not at end-of-buffer: start matching.
+      (catch 'eobp
         (let ((parse-sexp-ignore-comments t)
               depth in-string-p comment-level-p comment-or-string-start start end
               found-comment-p found-string-p)
           (while ;; Skip to start of where we should match.
-              (and (not (eobp))
-                   (cond ((eolp)
-                          (forward-line 1))
-                         ((looking-at-p (rx blank))
-                          (forward-whitespace 1))
-                         ((unless prism-strings
-                            (when (looking-at-p (rx (syntax string-quote)))
-                              ;; At a string: skip it.
-                              (forward-sexp))))
-                         ((unless prism-comments
-                            (forward-comment (buffer-size)))))))
+              (cond ((eobp)
+                     ;; Stop matching and return nil if at end-of-buffer.
+                     (throw 'eobp nil))
+                    ((eolp)
+                     (forward-line 1))
+                    ((looking-at-p (rx blank))
+                     (forward-whitespace 1))
+                    ((unless prism-strings
+                       (when (looking-at-p (rx (syntax string-quote)))
+                         ;; At a string: skip it.
+                         (forward-sexp))))
+                    ((unless prism-comments
+                       (forward-comment (buffer-size))))))
           (parse-syntax)
           (when in-string-p
             ;; In a string: go back to its beginning (before its delimiter).
