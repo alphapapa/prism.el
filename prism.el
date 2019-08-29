@@ -385,6 +385,9 @@ Matches up to LIMIT."
             ;; Be sure to return non-nil!
             t))))))
 
+;; MAYBE: The extend-region function might not be needed for non-lisp
+;; languages, or at all, if we use `syntax-ppss' and `scan-lists' properly.
+
 (defun prism-match-non-lisp (limit)
   "Matcher function for `font-lock-keywords' in non-Lisp buffers.
 Matches up to LIMIT.  Requires `prism-indent-offset' be set
