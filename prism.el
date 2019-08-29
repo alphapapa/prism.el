@@ -508,17 +508,19 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                           limit)))
           (when end
             ;; End found: Try to fontify.
-            (save-excursion
-              (or (unless (or found-string-p found-comment-p)
-                    ;; Neither in a string nor looking at nor in a comment: set `end' to any comment found before it.
-                    (when (re-search-forward (rx (syntax comment-start)) end t)
-                      (setf end (match-beginning 0))))
-                  (unless (or found-comment-p found-string-p)
-                    ;; Neither in nor looking at a comment: set `end' to any string or comment found before it.
+            (unless (or found-string-p found-comment-p)
+              ;; Neither in a string nor looking at nor in a comment.
+              (save-excursion
+                (or (when (re-search-forward (rx (syntax comment-start)) end t)
+                      ;; Set `end' to any comment found before it.
+                      (setf end (match-beginning 0)))
                     (when (re-search-forward (rx (or (syntax string-quote)
                                                      (syntax string-delimiter)))
                                              end t)
-                      (setf end (match-beginning 0))))))
+                      ;; Set `end' to any string found before it.
+                      (unless (nth 4 (syntax-ppss))
+                        ;; Not in a comment.
+                        (setf end (match-beginning 0)))))))
             (if (and (comment-p) (= 0 (depth-at)))
                 (setf prism-face nil)
               (setf prism-face (face-at)))
