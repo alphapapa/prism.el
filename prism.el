@@ -101,15 +101,15 @@
   "Alist mapping depth levels to string faces.")
 
 (defvar prism-face nil
-  "Set by `prism-match' during fontification.")
+  "Set by `prism-match-lisp' during fontification.")
 
 (defvar-local prism-syntax-table nil
   "Syntax table used by `prism-mode'.
 Set automatically.")
 
-(defvar-local prism-whitespace-indent-offset 4
+(defvar-local prism-indent-offset 4
   "Number of spaces which represents a semantic level of indentation.
-Set automatically by `prism-whitespace-mode'.  Should be set
+Set automatically by `prism-non-lisp-mode'.  Should be set
 appropriately for the current mode, e.g. `python-indent-offset'
 for `python-mode'.")
 
@@ -126,85 +126,92 @@ for `python-mode'.")
 (defvar prism-comments)
 (defvar prism-strings-fn)
 (defvar prism-strings)
+(defvar prism-indent-offsets)
 
 ;;;; Minor mode
 
-(defun prism-active-mode (without-mode)
-  "Return any already-active `prism' modes in this buffer, not including WITHOUT-MODE."
-  (cl-loop for mode in (remove without-mode '(prism-mode prism-whitespace-mode))
-           when (symbol-value mode)
-           return mode))
-
 ;;;###autoload
 (define-minor-mode prism-mode
-  "Disperse lisp forms (and other non-whitespace-sensitive syntax) into a spectrum of colors according to depth.
-Depth is determined by list nesting.  Suitable for Lisp, C-like
-languages, etc."
+  "Disperse code into a spectrum of colors according to depth.
+Activates an appropriate `prism' mode according to `prism-modes'."
   :global nil
-  (let ((keywords '((prism-match 0 prism-face prepend))))
+  (let ((mode (cdr (cl-find-if (lambda (cell)
+                                 (derived-mode-p (car cell)))
+                               prism-modes))))
+    (if mode
+        (funcall mode 'toggle)
+      (message "No `prism' mode for %s.  Using default `prism-non-lisp-mode'. See option `prism-modes'" major-mode)
+      (prism-non-lisp-mode 'toggle))))
+
+(define-minor-mode prism-lisp-mode
+  "Disperse lisp forms into a spectrum of colors according to depth.
+Depth is determined by list nesting (including lists bound by
+parentheses, brackets, and braces).  Suitable for Lisps."
+  :global nil
+  (let ((keywords '((prism-match-lisp 0 prism-face prepend))))
     (if prism-mode
         (progn
-          (when-let* ((active-mode (prism-active-mode 'prism-mode)))
-            (setf prism-mode nil)
-            (user-error "%s is already active in this buffer" active-mode))
           (unless prism-faces
             (prism-set-colors))
           (setq prism-syntax-table (prism-syntax-table (syntax-table)))
+          (prism-add-advice)
+          (prism-add-hook)
           (font-lock-add-keywords nil keywords 'append)
-          (font-lock-flush)
-          (add-hook 'font-lock-extend-region-functions #'prism-extend-region nil 'local)
-          (unless (advice-member-p #'prism-after-theme #'load-theme)
-            ;; Don't add the advice again, because this mode is
-            ;; buffer-local, but the advice is global.
-            (advice-add #'load-theme :after #'prism-after-theme)
-            (advice-add #'disable-theme :after #'prism-after-theme)))
+          (font-lock-flush))
       (font-lock-remove-keywords nil keywords)
       (prism-remove-faces)
-      (unless (--any (or (buffer-local-value 'prism-mode it)
-                         (buffer-local-value 'prism-whitespace-mode it))
-                     (buffer-list))
-        ;; Don't remove advice if `prism' is still active in any buffers.
-        (advice-remove #'load-theme #'prism-after-theme)
-        (advice-remove #'disable-theme #'prism-after-theme))
-      (remove-hook 'font-lock-extend-region-functions #'prism-extend-region 'local))))
+      (prism-remove-advice)
+      (prism-remove-hook))))
 
-;;;###autoload
-(define-minor-mode prism-whitespace-mode
-  "Disperse whitespace-sensitive syntax into a spectrum of colors according to depth.
-Depth is determined by indentation and list nesting.  Suitable
-for Python, Haskell, etc."
+(define-minor-mode prism-non-lisp-mode
+  "Disperse code syntax into a spectrum of colors according to depth.
+Depth is determined by list nesting, or by indentation when
+appropriate.  Intended for C-like languages, Python-like
+languages, Haskell, etc."
   :global nil
-  (let ((keywords '((prism-match-whitespace 0 prism-face prepend))))
-    (if prism-whitespace-mode
+  (let ((keywords '((prism-match-non-lisp 0 prism-face prepend))))
+    (if prism-non-lisp-mode
         (progn
-          (when-let* ((active-mode (prism-active-mode 'prism-whitespace-mode)))
-            (setf prism-whitespace-mode nil)
-            (user-error "%s is already active in this buffer" active-mode))
           (unless prism-faces
             (prism-set-colors))
           (setf prism-syntax-table (prism-syntax-table (syntax-table))
-                prism-whitespace-indent-offset (let ((indent (or (alist-get major-mode prism-whitespace-mode-indents)
-                                                                 (alist-get t prism-whitespace-mode-indents))))
-                                                 (cl-etypecase indent
-                                                   (symbol (symbol-value indent))
-                                                   (integer indent))))
+                prism-indent-offset (let ((indent (or (alist-get major-mode prism-indent-offsets)
+                                                      (alist-get t prism-indent-offsets))))
+                                      (cl-etypecase indent
+                                        (symbol (symbol-value indent))
+                                        (integer indent))))
+          (prism-add-advice)
+          (prism-add-hook)
           (font-lock-add-keywords nil keywords 'append)
-          (font-lock-flush)
-          (add-hook 'font-lock-extend-region-functions #'prism-extend-region nil 'local)
-          (unless (advice-member-p #'prism-after-theme #'load-theme)
-            ;; Don't add the advice again, because this mode is
-            ;; buffer-local, but the advice is global.
-            (advice-add #'load-theme :after #'prism-after-theme)
-            (advice-add #'disable-theme :after #'prism-after-theme)))
+          (font-lock-flush))
       (font-lock-remove-keywords nil keywords)
       (prism-remove-faces)
-      (unless (--any (or (buffer-local-value 'prism-mode it)
-                         (buffer-local-value 'prism-whitespace-mode it))
-                     (buffer-list))
-        ;; Don't remove advice if `prism' is still active in any buffers.
-        (advice-remove #'load-theme #'prism-after-theme)
-        (advice-remove #'disable-theme #'prism-after-theme))
-      (remove-hook 'font-lock-extend-region-functions #'prism-extend-region 'local))))
+      (prism-remove-advice)
+      (prism-remove-hook))))
+
+(defun prism-add-advice ()
+  "Add `prism-after-theme' advice to `load-theme' and `disable-theme', unless it already exists."
+  (unless (advice-member-p #'prism-after-theme #'load-theme)
+    ;; Don't add the advice again, because `prism' modes are
+    ;; buffer-local, but the advice is global.
+    (advice-add #'load-theme :after #'prism-after-theme)
+    (advice-add #'disable-theme :after #'prism-after-theme)))
+
+(defun prism-add-hook ()
+  "Add `prism-extend-region' to `font-lock-extend-region-functions'."
+  (add-hook 'font-lock-extend-region-functions #'prism-extend-region nil 'local))
+
+(defun prism-remove-advice ()
+  "Remove advice unless `prism' modes are active in any buffers."
+  (unless (--any (or (buffer-local-value 'prism-lisp-mode it)
+                     (buffer-local-value 'prism-non-lisp-mode it))
+                 (buffer-list))
+    (advice-remove #'load-theme #'prism-after-theme)
+    (advice-remove #'disable-theme #'prism-after-theme)))
+
+(defun prism-remove-hook ()
+  "Remove `prism-extend-region' from `font-lock-extend-region-functions'."
+  (remove-hook 'font-lock-extend-region-functions #'prism-extend-region 'local))
 
 ;;;; Functions
 
@@ -265,8 +272,8 @@ For `font-lock-extend-region-functions'."
     (modify-syntax-entry ?\} "){" table)
     table))
 
-(defun prism-match (limit)
-  "Matcher function for `font-lock-keywords'.
+(defun prism-match-lisp (limit)
+  "Matcher function for `font-lock-keywords' in Lisp buffers.
 Matches up to LIMIT."
   (cl-macrolet ((parse-syntax ()
                               `(-setq (depth _ _ in-string-p comment-level-p)
@@ -378,15 +385,15 @@ Matches up to LIMIT."
             ;; Be sure to return non-nil!
             t))))))
 
-(defun prism-match-whitespace (limit)
-  "Matcher function for `font-lock-keywords' in whitespace-sensitive buffers.
-Matches up to LIMIT.  Requires `prism-whitespace-indent-offset' be set
+(defun prism-match-non-lisp (limit)
+  "Matcher function for `font-lock-keywords' in non-Lisp buffers.
+Matches up to LIMIT.  Requires `prism-indent-offset' be set
 appropriately, e.g. to `python-indent-offset' for `python-mode'."
   (cl-macrolet ((parse-syntax ()
                               `(-setq (list-depth _ _ in-string-p comment-level-p _ _ _ comment-or-string-start)
                                  (syntax-ppss)))
                 (indent-depth ()
-                              `(/ (current-indentation) prism-whitespace-indent-offset))
+                              `(/ (current-indentation) prism-indent-offset))
                 (depth-at ()
                           ;; Yes, this is entirely too complicated--just like Python's syntax in
                           ;; comparison to Lisp.  But, "Eww, all those parentheses!"  they say.
@@ -402,10 +409,19 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                                          (backward-sexp 1)
                                          (+ (nth 0 (syntax-ppss)) (indent-depth))))
                                       (t (indent-depth))))
-                             (_ (save-excursion
-                                  ;; Exit lists back to depth 0.
-                                  (goto-char (scan-lists (point) -1 (nth 0 (syntax-ppss))))
-                                  (+ list-depth (indent-depth))))))
+                             (_ (cond ((looking-back (rx ":" (0+ blank) (1+ (or "\n" space)))
+                                                     (save-excursion
+                                                       (forward-line -1)
+                                                       (point)))
+                                       ;; Non-braced block, e.g. after "case CONDITION:".
+                                       (1+ (save-excursion
+                                             ;; Exit lists back to depth 0.
+                                             (goto-char (scan-lists (point) -1 (nth 0 (syntax-ppss))))
+                                             (+ list-depth (indent-depth)))))
+                                      (t (save-excursion
+                                           ;; Exit lists back to depth 0.
+                                           (goto-char (scan-lists (point) -1 (nth 0 (syntax-ppss))))
+                                           (+ list-depth (indent-depth))))))))
                 (comment-p ()
                            ;; This macro should only be used after `parse-syntax'.
                            `(or comment-level-p (looking-at-p (rx (or (syntax comment-start)
@@ -519,7 +535,7 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                                              end t)
                       ;; Set `end' to any string found before it.
                       (unless (nth 4 (syntax-ppss))
-                        ;; Not in a comment.
+                        ;; Not in a comment: stop at the string.
                         (setf end (match-beginning 0)))))))
             (if (and (comment-p) (= 0 (depth-at)))
                 (setf prism-face nil)
@@ -824,11 +840,29 @@ Receives one argument, a color name or hex RGB string."
   ;; so the "current group" isn't changed before they're all defined.
   :group 'prism)
 
-(defcustom prism-whitespace-mode-indents
-  (list (cons 'python-mode 'python-indent-offset)
+(defcustom prism-modes
+  (list (cons 'c-mode 'prism-non-lisp-mode)
+        (cons 'emacs-lisp-mode 'prism-lisp-mode)
+        (cons 'haskell-mode 'prism-non-lisp-mode)
+        (cons 'js-mode 'prism-non-lisp-mode)
+        (cons 'json-mode 'prism-non-lisp-mode)
+        (cons 'lisp-mode 'prism-lisp-mode)
+        (cons t 'prism-non-lisp-mode))
+  "Alist mapping major modes to `prism' modes.
+`prism-lisp-mode' should be suitable for Lisps.
+`prism-non-lisp-mode' should be suitable for other languages,
+including C-like languages, Python-like languages, Haskell, etc.
+The last cell is the default, and its key should be t."
+  :type '(alist :key-type (symbol :tag "Major mode (tested with `derived-mode-p')")
+                :value-type (choice (const :tag "`prism-lisp-mode'" prism-lisp-mode)
+                                    (const :tag "`prism-non-lisp-mode'" prism-non-lisp-mode))))
+
+(defcustom prism-indent-offsets
+  (list (cons 'c-mode 2)
+        (cons 'python-mode 'python-indent-offset)
         (cons 'haskell-mode 'haskell-indentation-left-offset)
         (cons t 4))
-  "Alist mapping major modes to indentation offsets for `prism-whitespace-mode'.
+  "Alist mapping major modes to indentation offsets for `prism-non-lisp-mode'.
 Each key should be a major mode function symbol, and the value
 either a variable whose value to use or an integer number of
 spaces.  The last cell is the default, and its key should be t."
