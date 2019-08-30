@@ -6,6 +6,12 @@
 
 It uses other methods, including modified syntax tables, and it sets both the =font-lock-face= and =face= properties.  It seems much faster.
 
+* Ideas
+
+** Use tree-sitter and/or SMIE
+
+Mentioned at https://www.reddit.com/r/emacs/comments/cxd60i/pareditsmartparens_for_all_languages_using/
+
 * Samples
 
 #+BEGIN_SRC elisp
