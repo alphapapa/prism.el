@@ -3,7 +3,7 @@
 ;; Copyright (C) 2019  Adam Porter
 
 ;; Author: Adam Porter <adam@alphapapa.net>
-;; URL: http://github.com/alphapapa/prism.el
+;; URL: https://github.com/alphapapa/prism.el
 ;; Version: 0.1-pre
 ;; Package-Requires: ((emacs "26.1") (dash "2.14.1"))
 ;; Keywords: faces lisp
