@@ -93,6 +93,7 @@
 (require 'cl-lib)
 (require 'color)
 (require 'thingatpt)
+(require 'subr-x)
 
 (require 'dash)
 
