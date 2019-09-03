@@ -130,7 +130,9 @@ The easiest way is to use [[https://framagit.org/steckerhalter/quelpa-use-packag
 :TOC:      0
 :END:
 
-1.  Run command =prism-mode= to enable it in the current buffer.  For whitespace-significant languages like Python, use =prism-whitespace-mode= instead.
+1.  Run the appropriate command for the current buffer:
+      -  For Lisp and C-like languages, use =prism-mode=.
+      -  For significant-whitespace languages like Python, or ones whose depth is not always indicated by parenthetical characters, like shell, use =prism-whitespace-mode= instead.
 2.  Enjoy.
 
 When a theme is loaded or disabled, colors are automatically updated.

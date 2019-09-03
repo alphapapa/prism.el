@@ -34,7 +34,14 @@
 
 ;; Usage:
 
-;; 1.  Activate `prism-mode' in a buffer.
+;; 1.  Run the appropriate command for the current buffer:
+
+;;   - For Lisp and C-like languages, use `prism-mode'.
+
+;;   - For significant-whitespace languages like Python, or ones whose
+;;     depth is not always indicated by parenthetical characters, like
+;;     shell, use `prism-whitespace-mode' instead.
+
 ;; 2.  Enjoy.
 
 ;; When a theme is loaded or disabled, colors are automatically
