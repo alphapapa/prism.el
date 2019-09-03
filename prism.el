@@ -126,6 +126,7 @@ for `python-mode'.")
 (defvar prism-comments)
 (defvar prism-strings-fn)
 (defvar prism-strings)
+(defvar prism-whitespace-mode-indents)
 
 ;;;; Minor mode
 
