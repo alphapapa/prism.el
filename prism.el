@@ -1,4 +1,4 @@
-;;; prism.el --- Disperse lisp forms (and other languages) into a spectrum of color by depth  -*- lexical-binding: t; -*-
+;;; prism.el --- Customizable, depth-based syntax coloring  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Adam Porter
 
