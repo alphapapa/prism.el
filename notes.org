@@ -118,12 +118,24 @@ Mentioned at https://www.reddit.com/r/emacs/comments/cxd60i/pareditsmartparens_f
                        collect (* 3 i))
     :colors (list "dodgerblue" "medium sea green" "sandy brown"))
 
-  (prism-set-colors :num 16 
-    :desaturations (cl-loop for i from 0 below 16
-                            collect (* i 2.5))
-    :lightens (cl-loop for i from 0 below 16
-                       collect (* i 2.5))
-    :colors (list "sandy brown" "dodgerblue" "medium sea green"))
+  (prism-set-colors :num 24
+                    :desaturations (cl-loop for i from 0 below 24
+                                            collect (* i 2.5))
+                    :lightens (cl-loop for i from 0 below 24
+                                       collect (* i 2.5))
+                    :colors (list "sandy brown" "dodgerblue" "medium sea green"))
+
+  (prism-set-colors :num 24
+                    :desaturations (cl-loop for i from 0 below 24
+                                            collect (* i 2))
+                    :lightens (cl-loop for i from 0 below 24
+                                       collect (* i 2))
+                    :colors (list "sandy brown" "dodgerblue" "medium sea green"))
+
+  (prism-set-colors :num 24
+                    :desaturations (prism-extrapolate 0 24 3 (* c 3.5))
+                    :lightens (prism-extrapolate 0 24 3 (* c 3.5))
+                    :colors (list "sandy brown" "dodgerblue" "medium sea green"))
 
   (prism-set-colors :num 16 :suffix 'strings
     :desaturations (cl-loop for i from 0 below 16

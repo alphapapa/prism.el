@@ -136,6 +136,33 @@ for `python-mode'.")
 (defvar prism-strings)
 (defvar prism-whitespace-mode-indents)
 
+;;;; Macros
+
+(defmacro prism-extrapolate (start times length form)
+  "Return list of numbers extrapolated from FORM.
+Starting from number START, repeating below TIMES, collect the
+value of FORM.  Each iteration, `i' is bound to the iteration
+number (the incremented value of START), and `c' is bound to the
+number of the current cycle through LENGTH, starting at 1.
+
+For example, this form:
+
+    (prism-extrapolate 0 24 3 (* c 3))
+
+Evaluates to:
+
+    (3 3 3 6 6 6 9 9 9 12 12 12 15 15 15 18 18 18 21 21 21 24 24 24)
+
+Intended for use as the DESATURATIONS and LIGHTENS arguments to
+`prism-set-colors'."
+  `(cl-loop with c = 1 with reset = 1
+            for i from ,start below ,times
+            collect ,form
+            do (if (= reset ,length)
+                   (setf reset 1
+                         c (1+ c))
+                 (cl-incf reset))))
+
 ;;;; Minor mode
 
 (defun prism-active-mode (without-mode)
@@ -600,6 +627,8 @@ modified as desired for comments or strings, respectively."
   (declare (indent defun))
   (when shuffle
     (setf colors (prism-shuffle colors)))
+  ;; MAYBE: Extrapolate desaturations and lightens cleverly, instead
+  ;; of requiring the user to call `prism-extrapolate'.
   (cl-flet ((faces (colors &optional suffix (fn #'identity))
                    (setf suffix (if suffix
                                     (concat "-" suffix)
