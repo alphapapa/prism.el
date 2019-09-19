@@ -2,6 +2,14 @@
 
 * Tasks
 
+** TODO Look into using jit-lock-register
+
+Michael Heerdegen pointed out this in a reply on emacs-devel:
+
+#+BEGIN_QUOTE
+If you use `font-lock-extend-region-functions', all of font-lock uses the extended region, right?  I guess basing your functionality on jit-lock-register could be better.
+#+END_QUOTE
+
 ** TODO Study =rainbow-blocks=
 
 It uses other methods, including modified syntax tables, and it sets both the =font-lock-face= and =face= properties.  It seems much faster.
