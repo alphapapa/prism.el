@@ -440,6 +440,10 @@ Matches up to LIMIT."
                                ;; which might mean that Emacs can handle that.  I think the important thing is not
                                ;; to hang Emacs, to always either return nil or advance point to `limit'.
                                limit))))
+          (when (< end start)
+            ;; Set search bound properly when `start' is greater than
+            ;; `end' (i.e. when `start' is moved past `limit', I think).
+            (setf end start))
           (when end
             ;; End found: Try to fontify.
             (save-excursion
@@ -589,6 +593,10 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                                ;; which might mean that Emacs can handle that.  I think the important thing is not
                                ;; to hang Emacs, to always either return nil or advance point to `limit'.
                                limit))))
+          (when (< end start)
+            ;; Set search bound properly when `start' is greater than
+            ;; `end' (i.e. when `start' is moved past `limit', I think).
+            (setf end start))
           (when end
             ;; End found: Try to fontify.
             (unless (or found-string-p found-comment-p)
