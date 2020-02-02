@@ -379,7 +379,11 @@ Matches up to LIMIT."
                             (setf found-comment-p t)
                             (point))
                           (when (looking-at-p (rx (syntax string-quote)))
-                            (forward-sexp 1)
+                            (if in-string-p
+                                ;; At end of string: break out of it.
+                                (forward-char 1)
+                              ;; At beginning of string: skip it.
+                              (forward-sexp 1))
                             (setf found-string-p t)
                             (point))
                           (ignore-errors
