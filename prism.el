@@ -307,6 +307,8 @@ non-nil, call `prism-set-colors' to update `prism' faces."
 For `font-lock-extend-region-functions'."
   ;;  (prism-debug (current-buffer) (point) font-lock-beg font-lock-end)
   (let (changed-p)
+    ;; NOTE: It doesn't seem to be necessary to extend the region backward/up, but I'm
+    ;; not completely sure that this is never needed, so I'm leaving it in, commented.
     ;; (unless (= 0 (nth 0 (syntax-ppss)))
     ;;   ;; Not at top level: extend region backward/up.
     ;;   (let ((orig-pos (point)))
@@ -316,7 +318,6 @@ For `font-lock-extend-region-functions'."
     ;;         (setf font-lock-beg (point))
     ;;         (unless (= font-lock-beg orig-pos)
     ;;           (setf changed-p t))))))
-    ;;  (message "FONT-LOCK-END: %s" font-lock-end)
     (save-excursion
       (goto-char font-lock-end)
       (unless (= 0 (nth 0 (syntax-ppss)))
