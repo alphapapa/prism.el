@@ -447,7 +447,7 @@ Matches up to LIMIT."
           (when end
             ;; End found: Try to fontify.
             (save-excursion
-              (or (unless (or found-string-p found-comment-p)
+              (or (unless (or in-string-p found-string-p found-comment-p)
                     ;; Neither in a string nor looking at nor in a comment: set `end' to any comment found before it.
                     (when (re-search-forward (rx (syntax comment-start)) end t)
                       (setf end (match-beginning 0))))
@@ -599,7 +599,7 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
             (setf end start))
           (when end
             ;; End found: Try to fontify.
-            (unless (or found-string-p found-comment-p)
+            (unless (or in-string-p found-string-p found-comment-p)
               ;; Neither in a string nor looking at nor in a comment.
               (save-excursion
                 (or (when (re-search-forward (rx (syntax comment-start)) end t)
