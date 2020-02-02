@@ -104,6 +104,12 @@ You can shuffle the order of the colors until you find a pattern you like:
 
 [[images/shuffled.png]]
 
+** Buffer-local themes
+
+You can even set themes buffer-locally (the theme-choosing command shown here is not included, but you can easily define your own "chooser" command using [[https://github.com/alphapapa/unpackaged.el#define-a-chooser-command][unpackaged/define-chooser]]):
+
+[[images/prism-themes.gif]]
+
 * Comparisons
 
 =prism= is much like [[https://github.com/istib/rainbow-blocks][rainbow-blocks]], but it differs in a few ways:
