@@ -143,6 +143,8 @@ To customize, see the =prism= customization group, e.g. by using @@html:<kbd>@@M
 
 More advanced customization of faces is done by calling =prism-set-colors=, which can override the default settings and perform additional color manipulations.  The primary argument is =COLORS=, which should be a list of colors, each of which may be a name, a hex RGB string, or a face name (of which the foreground color is used).  Note that the list of colors need not be as long as the number of faces that's actually set (e.g. the default is 16 faces), because the colors are automatically repeated and adjusted as necessary.
 
+Faces may be remapped buffer-locally by setting the =LOCAL= argument to =t= (interactively, with one universal prefix); if set to =reset= (interactively, with two prefixes), local remappings are cleared.
+
 If =prism-set-colors= is called with the =SAVE= argument, the results are saved to customization options so that =prism-mode= will use those colors by default.
 
 Here's an example that the author finds pleasant (seen in the first screenshot):

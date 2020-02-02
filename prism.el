@@ -645,7 +645,7 @@ removed."
 ;;;;; Colors
 
 (cl-defun prism-set-colors
-    (&key shuffle save
+    (&key shuffle save local
           (num prism-num-faces) (colors prism-colors)
           (attribute prism-color-attribute)
           (desaturations prism-desaturations) (lightens prism-lightens)
@@ -664,8 +664,13 @@ faces have been modified.
 NUM is the number of faces to set, i.e. the depth to make faces
 for.
 
-When SAVE is non-nil, save attributes to `prism-'
-customization options for future use by default.
+When SAVE is non-nil, save attributes to `prism-' customization
+options for future use by default.
+
+When LOCAL is t (interactively, with one universal prefix), remap
+faces buffer-locally; when `reset' (interactively, with two
+prefixes), clear local remapping and don't set any faces; when
+nil (the default), set faces globally.
 
 COLORS is a list of one or more color name strings (like
 \"green\" or \"#ff0000\") or face symbols (of which the
@@ -678,26 +683,39 @@ NUM, because they are extrapolated automatically.
 COMMENTS-FN and STRINGS-FN are functions of one argument, a color
 name or hex RGB string, which return the color having been
 modified as desired for comments or strings, respectively."
-  (interactive)
   (declare (indent defun))
+  (interactive)
+  (when (called-interactively-p 'any)
+    (setf local (pcase current-prefix-arg
+                  ('(16) 'reset)
+                  ('(4) t))))
   (when shuffle
     (setf colors (prism-shuffle colors)))
   ;; MAYBE: Extrapolate desaturations and lightens cleverly, instead
   ;; of requiring the user to call `prism-extrapolate'.
-  (cl-flet ((faces (colors &optional suffix (fn #'identity))
-                   (setf suffix (if suffix
-                                    (concat "-" suffix)
-                                  ""))
-                   (cl-loop for i from 0 below num
-                            for face = (intern (format "prism-level-%d%s" i suffix))
-                            for color = (funcall fn (nth i colors))
-                            ;; Delete existing face, important if e.g. changing :foreground to :background.
-                            when (internal-lisp-face-p face)
-                            do (face-spec-set face nil 'customized-face)
-                            do (custom-declare-face face '((t)) (format "`prism' face%s #%d" suffix i)
-                                                    :group 'prism-faces)
-                            do (set-face-attribute face nil attribute color)
-                            collect (cons i face))))
+  (cl-labels ((faces (colors &optional suffix (fn #'identity))
+                     (setf suffix (if suffix
+                                      (concat "-" suffix)
+                                    ""))
+                     (cl-loop for i from 0 below num
+                              for face = (intern (format "prism-level-%d%s" i suffix))
+                              for color = (funcall fn (nth i colors))
+                              for description = (format "`prism' face%s #%d" suffix i)
+                              do (set-face face attribute color description)
+                              collect (cons i face)))
+              (set-face (face attribute color description)
+                        (pcase local
+                          ('nil
+                           (when (internal-lisp-face-p face)
+                             ;; Delete existing face, important if e.g. changing :foreground to :background.
+                             (face-spec-set face nil 'customized-face))
+                           (custom-declare-face face '((t)) description :group 'prism-faces)
+                           (set-face-attribute face nil attribute color))
+                          ('reset (reset-face face))
+                          (_ (face-remap-add-relative face (list attribute color)))))
+              (reset-face (face)
+                          (--when-let (alist-get face face-remapping-alist)
+                            (face-remap-remove-relative (cons (-last-item it) (car (butlast it)))))))
     (let* ((colors (->> colors
                         (--map (pcase-exhaustive it
                                  ((pred facep) (face-attribute it :foreground nil 'inherit))
@@ -716,10 +734,20 @@ modified as desired for comments or strings, respectively."
                         (--map (--> (color-name-to-rgb it)
                                     (-let (((r g b) it))
                                       (color-rgb-to-hex r g b 2)))))))
-      (setf prism-faces (faces colors)
-            prism-faces-strings (faces colors "strings" strings-fn)
-            prism-faces-comments (faces colors "comments" comments-fn))
-      (when save
+      (cl-macrolet ((set-vars (&rest pairs)
+                              `(progn
+                                 ,@(cl-loop for (var val) on pairs by #'cddr
+                                            collect `(pcase local
+                                                       ('nil  ;; Set global faces.
+                                                        (set ',var ,val))
+                                                       ('reset  ;; Clear local remappings.
+                                                        ,val)
+                                                       (_  ;; Remap locally.
+                                                        (set (make-local-variable ',var) ,val)))))))
+        (set-vars prism-faces (faces colors)
+                  prism-faces-strings (faces colors "strings" strings-fn)
+                  prism-faces-comments (faces colors "comments" comments-fn)))
+      (when (and save (not local))
         ;; Save arguments for later saving as customized variables,
         ;; including the unmodified (but shuffled) colors.
         (setf prism-colors colors
