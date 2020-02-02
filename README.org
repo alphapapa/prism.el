@@ -178,9 +178,9 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 :TOC:      0
 :END:
 
-** 0.1-pre
+** 0.1
 
-Early prototype stages.
+First tagged version.  Possibly a few sneaky bugs lurking, but seems to work well.
 
 * Credits
 
