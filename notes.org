@@ -187,14 +187,27 @@ Mentioned at https://www.reddit.com/r/emacs/comments/cxd60i/pareditsmartparens_f
   ;;;; Strings, comments
 
   (prism-set-colors :num 24
-    :lightens '(5 15 25)
-    :colors (solarized-with-color-variables 'dark
-              (list red orange yellow green blue cyan violet magenta))
-    :comments-fn (lambda (color)
-                   (--> color
-                        (color-desaturate-name it 50)
-                        ;; (color-lighten-name it -5)
-                        )))
+                    :lightens '(5 15 25)
+                    :colors (solarized-with-color-variables 'dark
+                              (list red orange yellow green blue cyan violet magenta))
+                    :comments-fn (lambda (color)
+                                   (--> color
+                                        (color-desaturate-name it 50)
+                                        ;; (color-lighten-name it -5)
+                                        )))
+
+  (prism-set-colors
+   ;; Inverted rainbow, maybe helpful for making too-deeply-nested forms
+   ;; stand out.
+   :num 24
+   :lightens '(5 15 25)
+   :colors (solarized-with-color-variables 'dark
+             (nreverse (list red orange yellow green blue cyan violet magenta)))
+   :comments-fn (lambda (color)
+                  (--> color
+                       (color-desaturate-name it 50)
+                       ;; (color-lighten-name it -5)
+                       )))
   (prism-set-colors :num 16
     :desaturations (cl-loop for i from 0 below 16
                             collect (* i 2.5))
