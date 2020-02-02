@@ -163,48 +163,50 @@ Intended for use as the DESATURATIONS and LIGHTENS arguments to
                          c (1+ c))
                  (cl-incf reset))))
 
-(cl-defmacro prism-debug (&rest args)
-  "Display a debug warning showing the runtime value of ARGS.
-The warning automatically includes the name of the containing
-function, and it is only displayed if `warning-minimum-log-level'
-is `:debug' at runtime (which avoids formatting messages that
-won't be shown).
+;; NOTE: Since this will likely be useful in the future, I'm leaving it in, commented.
 
-Each of ARGS may be a string, which is displayed as-is, or a
-symbol, the value of which is displayed prefixed by its name, or
-a Lisp form, which is displayed prefixed by its first symbol.
-
-Before the actual ARGS arguments, you can write keyword
-arguments, i.e. alternating keywords and values.  The following
-keywords are supported:
-
-:buffer BUFFER   Name of buffer to pass to `display-warning'.
-:level  LEVEL    Level passed to `display-warning', which see.
-                 Default is :debug."
-  (pcase-let* ((fn-name (with-current-buffer
-                            (or byte-compile-current-buffer (current-buffer))
-                          ;; This is a hack, but a nifty one.
-                          (save-excursion
-                            (beginning-of-defun)
-                            (cl-second (read (current-buffer))))))
-               (plist-args (cl-loop while (keywordp (car args))
-                                    collect (pop args)
-                                    collect (pop args)))
-               ((map (:buffer buffer) (:level level)) plist-args)
-               (level (or level :debug))
-               (string (cl-loop for arg in args
-                                concat (pcase arg
-                                         ((pred stringp) "%s ")
-                                         ((pred symbolp)
-                                          (concat (upcase (symbol-name arg)) ":%s "))
-                                         ((pred listp)
-                                          (concat "(" (upcase (symbol-name (car arg)))
-                                                  (pcase (length arg)
-                                                    (1 ")")
-                                                    (_ "...)"))
-                                                  ":%s "))))))
-    `(when (eq :debug warning-minimum-log-level)
-       (display-warning ',fn-name (format ,string ,@args) ,level ,buffer))))
+;; (cl-defmacro prism-debug (&rest args)
+;;   "Display a debug warning showing the runtime value of ARGS.
+;; The warning automatically includes the name of the containing
+;; function, and it is only displayed if `warning-minimum-log-level'
+;; is `:debug' at runtime (which avoids formatting messages that
+;; won't be shown).
+;;
+;; Each of ARGS may be a string, which is displayed as-is, or a
+;; symbol, the value of which is displayed prefixed by its name, or
+;; a Lisp form, which is displayed prefixed by its first symbol.
+;;
+;; Before the actual ARGS arguments, you can write keyword
+;; arguments, i.e. alternating keywords and values.  The following
+;; keywords are supported:
+;;
+;; :buffer BUFFER   Name of buffer to pass to `display-warning'.
+;; :level  LEVEL    Level passed to `display-warning', which see.
+;;                  Default is :debug."
+;;   (pcase-let* ((fn-name (with-current-buffer
+;;                             (or byte-compile-current-buffer (current-buffer))
+;;                           ;; This is a hack, but a nifty one.
+;;                           (save-excursion
+;;                             (beginning-of-defun)
+;;                             (cl-second (read (current-buffer))))))
+;;                (plist-args (cl-loop while (keywordp (car args))
+;;                                     collect (pop args)
+;;                                     collect (pop args)))
+;;                ((map (:buffer buffer) (:level level)) plist-args)
+;;                (level (or level :debug))
+;;                (string (cl-loop for arg in args
+;;                                 concat (pcase arg
+;;                                          ((pred stringp) "%s ")
+;;                                          ((pred symbolp)
+;;                                           (concat (upcase (symbol-name arg)) ":%s "))
+;;                                          ((pred listp)
+;;                                           (concat "(" (upcase (symbol-name (car arg)))
+;;                                                   (pcase (length arg)
+;;                                                     (1 ")")
+;;                                                     (_ "...)"))
+;;                                                   ":%s "))))))
+;;     `(when (eq :debug warning-minimum-log-level)
+;;        (display-warning ',fn-name (format ,string ,@args) ,level ,buffer))))
 
 ;;;; Minor mode
 
@@ -303,7 +305,7 @@ non-nil, call `prism-set-colors' to update `prism' faces."
 (defun prism-extend-region ()
   "Extend region to the current sexp.
 For `font-lock-extend-region-functions'."
-  (prism-debug (current-buffer) (point) font-lock-beg font-lock-end)
+  ;;  (prism-debug (current-buffer) (point) font-lock-beg font-lock-end)
   (let (changed-p)
     ;; (unless (= 0 (nth 0 (syntax-ppss)))
     ;;   ;; Not at top level: extend region backward/up.
@@ -343,7 +345,7 @@ For `font-lock-extend-region-functions'."
 (defun prism-match (limit)
   "Matcher function for `font-lock-keywords'.
 Matches up to LIMIT."
-  (prism-debug (current-buffer) (point) limit)
+  ;;  (prism-debug (current-buffer) (point) limit)
   (cl-macrolet ((parse-syntax ()
                               `(-setq (depth _ _ in-string-p comment-level-p)
                                  (syntax-ppss)))
@@ -460,7 +462,7 @@ Matches up to LIMIT."
               (setf prism-face (face-at)))
             (goto-char end)
             (set-match-data (list start end (current-buffer)))
-            (prism-debug (current-buffer) "END" start end)
+            ;;  (prism-debug (current-buffer) "END" start end)
             ;; Be sure to return non-nil!
             t))))))
 
