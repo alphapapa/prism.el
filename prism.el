@@ -547,47 +547,48 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                 ;; I don't know if `ignore-errors' is going to be slow, but since
                 ;; `scan-lists' and `scan-sexps' signal errors, it seems necessary if we want
                 ;; to use them (and they seem to be cleaner to use than regexp searches).
-                end (save-excursion
-                      (or (when (and prism-comments (comment-p))
-                            (setf found-comment-p t)
-                            (when comment-or-string-start
-                              (goto-char comment-or-string-start))
-                            ;; We must only skip one comment, because before there is
-                            ;; non-comment, non-whitespace text, the indent depth might change.
-                            (forward-comment 1)
-                            (point))
-                          (when (looking-at-p (rx (syntax close-parenthesis)))
-                            ;; I'd like to just use `scan-lists', but I can't find a way around this initial check.
-                            ;; The code (scan-lists start 1 1), when called just inside a list, scans past the end
-                            ;; of it, to just outside it, which is not what we want, because we want to highlight
-                            ;; the closing paren with the shallower depth.  But if we just back up one character,
-                            ;; we never exit the list.  So we have to check whether we're looking at the close of a
-                            ;; list, and if so, move just past it.
-                            (cl-decf list-depth)
-                            (1+ start))
-                          (when (looking-at-p (rx (or (syntax string-quote)
-                                                      (syntax string-delimiter))))
-                            (forward-sexp 1)
-                            (setf found-string-p t)
-                            (point))
-                          ;; Don't go past the end of the line.
-                          (apply #'min
-                                 (-non-nil
-                                  (list
-                                   (or (ignore-errors
-                                         ;; Scan to the past the delimiter of the next deeper list.
-                                         (scan-lists start 1 -1))
-                                       (ignore-errors
-                                         ;; Scan to the end of the current list delimiter.
-                                         (1- (scan-lists start 1 1))))
-                                   (line-end-position))))
-                          ;; If we can't find anything, return `limit'.  I'm not sure if this is the correct
-                          ;; thing to do, but it avoids an error (and possibly hanging Emacs) in the event of
-                          ;; an undiscovered bug.  Although, signaling an error might be better, because I
-                          ;; have seen "redisplay" errors related to font-lock in the messages buffer before,
-                          ;; which might mean that Emacs can handle that.  I think the important thing is not
-                          ;; to hang Emacs, to always either return nil or advance point to `limit'.
-                          limit)))
+                end (min limit
+                         (save-excursion
+                           (or (when (and prism-comments (comment-p))
+                                 (setf found-comment-p t)
+                                 (when comment-or-string-start
+                                   (goto-char comment-or-string-start))
+                                 ;; We must only skip one comment, because before there is
+                                 ;; non-comment, non-whitespace text, the indent depth might change.
+                                 (forward-comment 1)
+                                 (point))
+                               (when (looking-at-p (rx (syntax close-parenthesis)))
+                                 ;; I'd like to just use `scan-lists', but I can't find a way around this initial check.
+                                 ;; The code (scan-lists start 1 1), when called just inside a list, scans past the end
+                                 ;; of it, to just outside it, which is not what we want, because we want to highlight
+                                 ;; the closing paren with the shallower depth.  But if we just back up one character,
+                                 ;; we never exit the list.  So we have to check whether we're looking at the close of a
+                                 ;; list, and if so, move just past it.
+                                 (cl-decf list-depth)
+                                 (1+ start))
+                               (when (looking-at-p (rx (or (syntax string-quote)
+                                                           (syntax string-delimiter))))
+                                 (forward-sexp 1)
+                                 (setf found-string-p t)
+                                 (point))
+                               ;; Don't go past the end of the line.
+                               (apply #'min
+                                      (-non-nil
+                                       (list
+                                        (or (ignore-errors
+                                              ;; Scan to the past the delimiter of the next deeper list.
+                                              (scan-lists start 1 -1))
+                                            (ignore-errors
+                                              ;; Scan to the end of the current list delimiter.
+                                              (1- (scan-lists start 1 1))))
+                                        (line-end-position))))
+                               ;; If we can't find anything, return `limit'.  I'm not sure if this is the correct
+                               ;; thing to do, but it avoids an error (and possibly hanging Emacs) in the event of
+                               ;; an undiscovered bug.  Although, signaling an error might be better, because I
+                               ;; have seen "redisplay" errors related to font-lock in the messages buffer before,
+                               ;; which might mean that Emacs can handle that.  I think the important thing is not
+                               ;; to hang Emacs, to always either return nil or advance point to `limit'.
+                               limit))))
           (when end
             ;; End found: Try to fontify.
             (unless (or found-string-p found-comment-p)
