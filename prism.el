@@ -320,20 +320,13 @@ For `font-lock-extend-region-functions'."
       (unless (= 0 (nth 0 (syntax-ppss)))
         ;; Not at top level: extend region forward.
         (let ((end (save-excursion
-                     (ignore-errors
-                       ;; This function signals an error, (scan-error "Containing
-                       ;; expression ends prematurely"), when called with point
-                       ;; immediately before the closing paren of an sexp.  In that
-                       ;; case, we're already at the end, so ignore the error.
-                       ;; FIXME: Maybe use something other than `thing-at-point--end-of-sexp',
-                       ;; although its implementation looks very simple.
-                       (thing-at-point--end-of-sexp))
-                     (point))))
-          (when (> end font-lock-end)
+                     (when (ignore-errors
+                             (backward-up-list -1 t t))
+                       (point)))))
+          (when (and end (> end font-lock-end))
             (setf font-lock-end (1- end)
                   changed-p t)
-            ;;  (message "FONT-LOCK-END CHANGED TO: %s" font-lock-end)))))
-    changed-p))
+            changed-p))))))
 
 (defun prism-syntax-table (syntax-table)
   "Return SYNTAX-TABLE modified for `prism'."
