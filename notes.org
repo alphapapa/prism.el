@@ -2,6 +2,27 @@
 
 * Tasks
 
+** TODO Add color shuffle command
+
+This is very useful when changing themes, because the default set of faces may not present good contrast between levels, and sometimes shuffling a few times produces a great set of colors.
+
+#+BEGIN_SRC elisp
+  ("Shuffle random number of theme faces"
+   (prism-set-colors :num 24
+     :colors (let* ((faces (list 'font-lock-regexp-grouping-backslash 'font-lock-regexp-grouping-construct
+                                 'font-lock-negation-char-face 'font-lock-preprocessor-face
+                                 'font-lock-function-name-face 'font-lock-keyword-face
+                                 'font-lock-variable-name-face 'font-lock-warning-face
+                                 'font-lock-builtin-face 'font-lock-constant-face
+                                 'font-lock-string-face 'font-lock-type-face))
+                    (colors (->> faces
+                                 (--map (face-attribute it :foreground))
+                                 (--remove (eq 'unspecified it))
+                                 -uniq))
+                    (num (max 3 (random (1+ (length colors))))))
+               (prism-shuffle (seq-take colors num)))))
+#+END_SRC
+
 ** TODO Look into using jit-lock-register
 
 Michael Heerdegen pointed out this in a reply on emacs-devel:
