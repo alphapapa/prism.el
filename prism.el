@@ -787,8 +787,17 @@ arguments to set the same faces."
   "Return list of NUM colors modified according to DESATURATIONS and LIGHTENS."
   (cl-flet ((modify-color (color desaturate lighten)
                           (--> color
-                               (color-desaturate-name it desaturate)
-                               (color-lighten-name it lighten))))
+                               (if (> desaturate 0)
+                                   (color-desaturate-name it desaturate)
+                                 it)
+                               (if (> lighten 0)
+                                   (color-lighten-name it lighten)
+                                 it)
+                               ;; FIXME: It seems that these two functions called in sequence
+                               ;; always modify the color, e.g. #ff2afc becomes #fe29fb.
+                               (color-name-to-rgb it)
+                               (-let (((r g b) it))
+                                 (color-rgb-to-hex r g b 2)))))
     (when (< (length desaturations) num)
       (setf desaturations (prism-expand-list num desaturations)))
     (when (< (length lightens) num)
