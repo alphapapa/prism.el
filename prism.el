@@ -128,6 +128,7 @@ for `python-mode'.")
 ;; breaks the loop.
 (defvar prism-colors)
 (defvar prism-color-attribute)
+(defvar prism-color-distance)
 (defvar prism-desaturations)
 (defvar prism-lightens)
 (defvar prism-num-faces)
@@ -768,6 +769,70 @@ modified as desired for comments or strings, respectively."
               prism-strings-fn strings-fn)
         (prism-save-colors)))))
 
+(defun prism-randomize-colors (&optional unique-p)
+  "Randomize `prism' colors using themed `font-lock' faces.
+If UNIQUE-P (interactively, with prefix), only use unique
+colors."
+  (interactive "P")
+  (cl-labels ((colorize (name)
+                        ;; Return color NAME propertized with its foreground as its color.
+                        (propertize name 'face (list :foreground name)))
+              (faces ()
+                     (->> (face-list)
+                          (--select (and (string-prefix-p "prism-level" (symbol-name it))
+                                         (string-match-p (rx digit eos) (symbol-name it))))
+                          nreverse (-map #'face-foreground) (-map #'colorize)))
+              (select-colors (colors threshold)
+                             ;; Return shuffled list of COLORS ensuring that the
+                             ;; distance between each one meets THRESHOLD.
+                             (cl-loop with selected = (list (pop colors))
+                                      while colors
+                                      do (setf colors (prism-shuffle colors))
+                                      for index = (--find-index (>= (color-distance (car selected)
+                                                                                    it)
+                                                                    threshold)
+                                                                colors)
+                                      while index
+                                      do (progn
+                                           (push (nth index colors) selected)
+                                           (setf colors (-remove-at index colors)))
+                                      finally return selected))
+              (option-customized-p (option)
+                                   (not (equal (pcase-exhaustive (get option 'standard-value)
+                                                 (`((funcall (function ,fn))) (funcall fn)))
+                                               (symbol-value option)))))
+    (let* ((faces (--select (string-prefix-p "font-lock-" (symbol-name it))
+                            (face-list)))
+           (colors (->> faces
+                        (--map (face-attribute it :foreground))
+                        (--remove (eq 'unspecified it))
+                        (-remove #'color-gray-p)))
+	   (colors (if unique-p (-uniq colors) colors))
+	   (colors (select-colors (prism-shuffle colors) prism-color-distance))
+           (desaturations (if (option-customized-p 'prism-desaturations)
+                              prism-desaturations
+                            (prism-extrapolate 0 prism-num-faces (length colors)
+                                               (* c (+ 2 (length colors))))))
+           (lightens (if (option-customized-p 'prism-lightens)
+                         prism-lightens
+                       (prism-extrapolate 0 prism-num-faces (length colors)
+                                          (* c (+ 2 (length colors)))))))
+      (prism-set-colors :colors colors
+        :desaturations desaturations
+	:lightens lightens
+        :comments-fn (if (option-customized-p 'prism-comments-fn)
+                         prism-comments-fn
+                       (lambda (color)
+                         (--> color
+                              ;; The default function desaturates by 30%, but 40%
+                              ;; seems to help a bit when using random colors.
+                              (color-desaturate-name it 40)
+                              (color-lighten-name it -10)))))
+      (message "Randomized%s colors: %s\nFaces: %s"
+               (if unique-p ", unique" "")
+               (string-join (-map #'colorize colors) " ")
+               (string-join (faces) " ")))))
+
 (defun prism-save-colors ()
   "Save current `prism' colors.
 Function `prism-set-colors' does not save its argument values
@@ -955,6 +1020,11 @@ Receives one argument, a color name or hex RGB string."
                                (string :tag "Color name"))
                          (function :tag "Function which returns a color")))
   :set #'prism-customize-set)
+
+(defcustom prism-color-distance 131072
+  "Minimum distance between randomized colors.
+See `color-distance'."
+  :type 'integer)
 
 (defgroup prism-faces nil
   "Faces for `prism'.  Set automatically with `prism-set-colors'.  Do not set manually."

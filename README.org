@@ -141,9 +141,11 @@ The easiest way is to use [[https://framagit.org/steckerhalter/quelpa-use-packag
       -  For significant-whitespace languages like Python, or ones whose depth is not always indicated by parenthetical characters, like shell, use =prism-whitespace-mode= instead.
 2.  Enjoy.
 
-When a theme is loaded or disabled, colors are automatically updated.
+** Notes
 
-To customize, see the =prism= customization group, e.g. by using @@html:<kbd>@@M-x customize-group RET prism RET@@html:</kbd>@@.  For example, by default, comments and strings are colorized according to depth, similarly to code, but this can be disabled.
++  If the colors aren't satisfactory, use command =prism-randomize-colors= to randomize the =prism= colors according to the current Emacs theme.  When you find a set you like, you may save the colors with command =prism-save-colors=.
++  When a theme is loaded or disabled, and =prism-colors= is a list of faces (rather than a list of colors), =prism-colors= is automatically updated.  If =prism-colors= is a list of colors, call =prism-randomize-colors= manually to update for a new theme.
++  To customize, see the =prism= customization group, e.g. by using @@html:<kbd>@@M-x customize-group RET prism RET@@html:</kbd>@@.  For example, by default, comments and strings are colorized according to depth, similarly to code, but this can be disabled.
 
 ** Advanced
 
@@ -180,7 +182,8 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 
 ** 0.2-pre
 
-Nothing new yet.
+*Added*
++  Command =prism-randomize-colors=, which sets =faces= based on a random, shuffled selection of =font-lock= faces in the current Emacs theme.
 
 ** 0.1
 
