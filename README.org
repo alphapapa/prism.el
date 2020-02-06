@@ -178,6 +178,10 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 :TOC:      0
 :END:
 
+** 0.2-pre
+
+Nothing new yet.
+
 ** 0.1
 
 First tagged version.  Possibly a few sneaky bugs lurking, but seems to work well.
