@@ -722,7 +722,7 @@ modified as desired for comments or strings, respectively."
                             (face-remap-remove-relative (cons (-last-item it) (car (butlast it)))))))
     (let* ((colors (->> colors
                         (--map (pcase-exhaustive it
-                                 ((pred facep) (face-attribute it :foreground nil 'inherit))
+                                 ((pred facep) (face-attribute it :foreground nil 'default))
                                  ((pred stringp) it)
                                  ((pred functionp) (funcall it))
                                  (`(themed ,color) (prism-theme-color color))))
