@@ -92,6 +92,7 @@
 
 (require 'cl-lib)
 (require 'color)
+(require 'face-remap)
 (require 'thingatpt)
 (require 'subr-x)
 
