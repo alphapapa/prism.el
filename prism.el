@@ -411,12 +411,14 @@ Matches up to LIMIT."
                 end (min limit
                          (save-excursion
                            (or (when (looking-at-p (rx (syntax close-parenthesis)))
-                                 ;; I'd like to just use `scan-lists', but I can't find a way around this initial check.
-                                 ;; The code (scan-lists start 1 1), when called just inside a list, scans past the end
-                                 ;; of it, to just outside it, which is not what we want, because we want to highlight
-                                 ;; the closing paren with the shallower depth.  But if we just back up one character,
-                                 ;; we never exit the list.  So we have to check whether we're looking at the close of a
-                                 ;; list, and if so, move just past it.
+                                 ;; I'd like to just use `scan-lists', but I can't find a way
+                                 ;; around this initial check.  The code (scan-lists start 1
+                                 ;; 1), when called just inside a list, scans past the end of
+                                 ;; it, to just outside it, which is not what we want, because
+                                 ;; we want to highlight the closing paren with the shallower
+                                 ;; depth.  But if we just back up one character, we never
+                                 ;; exit the list.  So we have to check whether we're looking
+                                 ;; at the close of a list, and if so, move just past it.
                                  (cl-decf depth)
                                  (1+ start))
                                (when (and prism-comments (comment-p))
@@ -437,12 +439,14 @@ Matches up to LIMIT."
                                (ignore-errors
                                  ;; Scan to the end of the current list delimiter.
                                  (1- (scan-lists start 1 1)))
-                               ;; If we can't find anything, return `limit'.  I'm not sure if this is the correct
-                               ;; thing to do, but it avoids an error (and possibly hanging Emacs) in the event of
-                               ;; an undiscovered bug.  Although, signaling an error might be better, because I
-                               ;; have seen "redisplay" errors related to font-lock in the messages buffer before,
-                               ;; which might mean that Emacs can handle that.  I think the important thing is not
-                               ;; to hang Emacs, to always either return nil or advance point to `limit'.
+                               ;; If we can't find anything, return `limit'.  I'm not sure if
+                               ;; this is the correct thing to do, but it avoids an error (and
+                               ;; possibly hanging Emacs) in the event of an undiscovered bug.
+                               ;; Although, signaling an error might be better, because I have
+                               ;; seen "redisplay" errors related to font-lock in the messages
+                               ;; buffer before, which might mean that Emacs can handle that.
+                               ;; I think the important thing is not to hang Emacs, to always
+                               ;; either return nil or advance point to `limit'.
                                limit))))
           (when (< end start)
             ;; Set search bound properly when `start' is greater than
@@ -452,11 +456,13 @@ Matches up to LIMIT."
             ;; End found: Try to fontify.
             (save-excursion
               (or (unless (or in-string-p found-string-p found-comment-p)
-                    ;; Neither in a string nor looking at nor in a comment: set `end' to any comment found before it.
+                    ;; Neither in a string nor looking at nor in a
+                    ;; comment: set `end' to any comment found before it.
                     (when (re-search-forward (rx (syntax comment-start)) end t)
                       (setf end (match-beginning 0))))
                   (unless (or found-comment-p found-string-p)
-                    ;; Neither in nor looking at a comment: set `end' to any string or comment found before it.
+                    ;; Neither in nor looking at a comment: set `end'
+                    ;; to any string or comment found before it.
                     (when (re-search-forward (rx (syntax string-quote)) end t)
                       (setf end (match-beginning 0))))))
             (if (and (comment-p) (= 0 depth))
