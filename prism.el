@@ -483,7 +483,11 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                               `(-setq (list-depth _ _ in-string-p comment-level-p _ _ _ comment-or-string-start)
                                  (syntax-ppss)))
                 (indent-depth ()
-                              `(/ (current-indentation) prism-whitespace-indent-offset))
+                              `(cond ((save-excursion
+                                        (forward-line -1)
+                                        (looking-at-p (rx (1+ nonl) "\\" eol)))
+                                      (/ (current-indentation) (* 2 prism-whitespace-indent-offset)))
+                                     (t (/ (current-indentation) prism-whitespace-indent-offset))))
                 (depth-at ()
                           ;; Yes, this is entirely too complicated--just like Python's syntax in
                           ;; comparison to Lisp.  But, "Eww, all those parentheses!"  they say.
