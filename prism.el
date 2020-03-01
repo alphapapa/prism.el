@@ -1025,7 +1025,7 @@ Receives one argument, a color name or hex RGB string."
                          (function :tag "Function which returns a color")))
   :set #'prism-customize-set)
 
-(defcustom prism-color-distance 131072
+(defcustom prism-color-distance 32768
   "Minimum distance between randomized colors.
 See `color-distance'."
   :type 'integer)
