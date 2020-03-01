@@ -4,6 +4,8 @@
 
 # Note: This readme works with the org-make-toc <https://github.com/alphapapa/org-make-toc> package, which automatically updates the table of contents.
 
+#+HTML: <img src="images/scarlet-macaw.png" align="right">
+
 # [[https://melpa.org/#/package-name][file:https://melpa.org/packages/prism-badge.svg]] [[https://stable.melpa.org/#/package-name][file:https://stable.melpa.org/packages/prism-badge.svg]]
 
 =prism= disperses lisp forms (and other languages) into a spectrum of color by depth.  It's similar to =rainbow-blocks=, but it respects existing non-color face properties, and allows flexible configuration of faces and colors.  It also optionally colorizes strings and/or comments by code depth in a similar, customizable way.
