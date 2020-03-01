@@ -773,9 +773,9 @@ modified as desired for comments or strings, respectively."
               prism-strings-fn strings-fn)
         (prism-save-colors)))))
 
-(defun prism-randomize-colors (&optional unique-p)
+(defun prism-randomize-colors (&optional allow-repeat-p)
   "Randomize `prism' colors using themed `font-lock' faces.
-If UNIQUE-P (interactively, with prefix), only use unique
+If ALLOW-REPEAT-P (interactively, with prefix), allow repeated
 colors."
   (interactive "P")
   (cl-labels ((colorize (name)
@@ -801,6 +801,9 @@ colors."
                                            (push (nth index colors) selected)
                                            (setf colors (-remove-at index colors)))
                                       finally return selected))
+	      (background-contrast-p (color &optional (min-distance 32768))
+				     (>= (color-distance color (face-attribute 'default :background))
+					min-distance))
               (option-customized-p (option)
                                    (not (equal (pcase-exhaustive (get option 'standard-value)
                                                  (`((funcall (function ,fn))) (funcall fn)))
@@ -810,9 +813,11 @@ colors."
            (colors (->> faces
                         (--map (face-attribute it :foreground))
                         (--remove (eq 'unspecified it))
-                        (-remove #'color-gray-p)))
-	   (colors (if unique-p (-uniq colors) colors))
-	   (colors (select-colors (prism-shuffle colors) prism-color-distance))
+                        (-remove #'color-gray-p)
+			(-select #'background-contrast-p)))
+	   (colors (if allow-repeat-p colors (-uniq colors)))
+	   (colors (select-colors colors prism-color-distance))
+	   (colors (-rotate (random (length colors)) colors))
            (desaturations (if (option-customized-p 'prism-desaturations)
                               prism-desaturations
                             (prism-extrapolate 0 prism-num-faces (length colors)
@@ -833,7 +838,7 @@ colors."
                               (color-desaturate-name it 40)
                               (color-lighten-name it -10)))))
       (message "Randomized%s colors: %s\nFaces: %s"
-               (if unique-p ", unique" "")
+               (if allow-repeat-p "" ", unique")
                (string-join (-map #'colorize colors) " ")
                (string-join (faces) " ")))))
 
