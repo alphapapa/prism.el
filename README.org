@@ -14,15 +14,16 @@
 :PROPERTIES:
 :TOC:      this
 :END:
-  -  [[#screenshots][Screenshots]]
-    -  [[#lisp-and-c-like-languages][Lisp and C-like languages]]
-    -  [[#whitespace-sensitive-languages][Whitespace-sensitive languages]]
-    -  [[#customizable-colors][Customizable colors]]
-  -  [[#comparisons][Comparisons]]
-  -  [[#installation][Installation]]
-  -  [[#usage][Usage]]
-  -  [[#changelog][Changelog]]
-  -  [[#credits][Credits]]
+-  [[#screenshots][Screenshots]]
+  -  [[#lisp-and-c-like-languages][Lisp and C-like languages]]
+  -  [[#whitespace-sensitive-languages][Whitespace-sensitive languages]]
+  -  [[#customizable-colors][Customizable colors]]
+  -  [[#buffer-local-themes][Buffer-local themes]]
+-  [[#comparisons][Comparisons]]
+-  [[#installation][Installation]]
+-  [[#usage][Usage]]
+-  [[#changelog][Changelog]]
+-  [[#credits][Credits]]
 
 * Screenshots
 
@@ -143,10 +144,8 @@ The easiest way is to use [[https://framagit.org/steckerhalter/quelpa-use-packag
       -  For significant-whitespace languages like Python, or ones whose depth is not always indicated by parenthetical characters, like shell, use =prism-whitespace-mode= instead.
 2.  Enjoy.
 
-** Notes
-
 +  If the colors aren't satisfactory, use command =prism-randomize-colors= to randomize the =prism= colors according to the current Emacs theme.  When you find a set you like, you may save the colors with command =prism-save-colors=.
-+  When a theme is loaded or disabled, and =prism-colors= is a list of faces (rather than a list of colors), =prism-colors= is automatically updated.  If =prism-colors= is a list of colors, call =prism-randomize-colors= manually to update for a new theme.
++  When a theme is loaded or disabled, and =prism-colors= is a list of faces (rather than a list of colors), =prism-colors= is automatically updated.  If =prism-colors= is a list of colors, call =prism-set-colors= or =prism-randomize-colors= manually to update for a new theme.
 +  To customize, see the =prism= customization group, e.g. by using @@html:<kbd>@@M-x customize-group RET prism RET@@html:</kbd>@@.  For example, by default, comments and strings are colorized according to depth, similarly to code, but this can be disabled.
 
 ** Advanced
