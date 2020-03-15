@@ -773,29 +773,29 @@ modified as desired for comments or strings, respectively."
               prism-strings-fn strings-fn)
         (prism-save-colors)))))
 
-(defun prism-randomize-colors (&optional allow-repeat-p)
+(defun prism-randomize-colors (&optional arg)
   "Randomize `prism' colors using themed `font-lock' faces.
-If ALLOW-REPEAT-P (interactively, with prefix), allow repeated
-colors."
+ARG may be a number (which limits the number of colors used), or
+a universal prefix (to use all `font-lock' faces), or nil (to use
+unique colors from `font-lock' faces)."
   (interactive "P")
-  (cl-labels ((colorize (name)
-                        ;; Return color NAME propertized with its foreground as its color.
-                        (propertize name 'face (list :foreground name)))
-              (faces ()
-                     (->> (face-list)
-                          (--select (and (string-prefix-p "prism-level" (symbol-name it))
-                                         (string-match-p (rx digit eos) (symbol-name it))))
-                          nreverse (-map #'face-foreground) (-map #'colorize)))
+  (cl-labels ((colorize  ;; Return color NAME propertized with its foreground as its color.
+	       (name) (propertize name 'face (list :foreground name)))
+              (faces  ;; Return list of used colors with foreground color face applied.
+	       () (->> (face-list)
+                       (--select (and (string-prefix-p "prism-level" (symbol-name it))
+                                      (string-match-p (rx digit eos) (symbol-name it))))
+                       nreverse (-map #'face-foreground) (-map #'colorize)))
               (select-colors (colors threshold)
                              ;; Return shuffled list of COLORS ensuring that the
                              ;; distance between each one meets THRESHOLD.
                              (cl-loop with selected = (list (pop colors))
                                       while colors
                                       do (setf colors (prism-shuffle colors))
-                                      for index = (--find-index (>= (color-distance (car selected)
-                                                                                    it)
-                                                                    threshold)
-                                                                colors)
+                                      for index = (--find-index
+                                                   (>= (color-distance (car selected) it)
+                                                       threshold)
+                                                   colors)
                                       while index
                                       do (progn
                                            (push (nth index colors) selected)
@@ -803,11 +803,11 @@ colors."
                                       finally return selected))
 	      (background-contrast-p (color &optional (min-distance 32768))
 				     (>= (color-distance color (face-attribute 'default :background))
-					min-distance))
-              (option-customized-p (option)
-                                   (not (equal (pcase-exhaustive (get option 'standard-value)
-                                                 (`((funcall (function ,fn))) (funcall fn)))
-                                               (symbol-value option)))))
+					 min-distance))
+              (option-customized-p
+	       (option) (not (equal (pcase-exhaustive (get option 'standard-value)
+				      (`((funcall (function ,fn))) (funcall fn)))
+				    (symbol-value option)))))
     (let* ((faces (--select (string-prefix-p "font-lock-" (symbol-name it))
                             (face-list)))
            (colors (->> faces
@@ -815,7 +815,10 @@ colors."
                         (--remove (eq 'unspecified it))
                         (-remove #'color-gray-p)
 			(-select #'background-contrast-p)))
-	   (colors (if allow-repeat-p colors (-uniq colors)))
+	   (colors (pcase arg
+		     ((pred integerp) (-take arg (prism-shuffle (-uniq colors))))
+		     ('(4) colors)
+		     (_ (-uniq colors))))
 	   (colors (select-colors colors prism-color-distance))
 	   (colors (-rotate (random (length colors)) colors))
            (desaturations (if (option-customized-p 'prism-desaturations)
@@ -838,7 +841,9 @@ colors."
                               (color-desaturate-name it 40)
                               (color-lighten-name it -10)))))
       (message "Randomized%s colors: %s\nFaces: %s"
-               (if allow-repeat-p "" ", unique")
+               (pcase arg
+		 ('(4) "")
+		 (_ ", unique"))
                (string-join (-map #'colorize colors) " ")
                (string-join (faces) " ")))))
 
