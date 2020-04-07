@@ -181,6 +181,11 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 :TOC:      0
 :END:
 
+** 0.2.2
+
+*Fixed*
++  The fix in previous version.  Oops.
+
 ** 0.2.1
 
 *Fixed*
