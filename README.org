@@ -195,7 +195,8 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 
 ** 0.3-pre
 
-Nothing new yet.
+*Changed*
++  Both =prism-mode= and =prism-whitespace-mode= deactivate the other mode when activated, allowing them to be switched between without having to disable one first.
 
 ** 0.2.3
 

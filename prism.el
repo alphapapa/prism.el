@@ -212,11 +212,13 @@ Intended for use as the DESATURATIONS and LIGHTENS arguments to
 
 ;;;; Minor mode
 
-(defun prism-active-mode (without-mode)
-  "Return any already-active `prism' modes in this buffer, not including WITHOUT-MODE."
-  (cl-loop for mode in (remove without-mode '(prism-mode prism-whitespace-mode))
+(defun prism-active-mode ()
+  "Return any already-active `prism' modes in this buffer.
+There should only ever be one, but the return value is a list of
+modes."
+  (cl-loop for mode in '(prism-mode prism-whitespace-mode)
            when (symbol-value mode)
-           return mode))
+           collect mode))
 
 ;;;###autoload
 (define-minor-mode prism-mode
@@ -227,9 +229,9 @@ languages, etc."
   (let ((keywords '((prism-match 0 prism-face prepend))))
     (if prism-mode
         (progn
-          (when-let* ((active-mode (prism-active-mode 'prism-mode)))
-            (setf prism-mode nil)
-            (user-error "%s is already active in this buffer" active-mode))
+          (dolist (mode (cl-remove 'prism-mode (prism-active-mode)))
+            ;; Deactivate alternative mode so this one can be enabled.
+            (funcall mode -1))
           (unless prism-faces
             (prism-set-colors))
           (setq prism-syntax-table (prism-syntax-table (syntax-table)))
@@ -260,9 +262,9 @@ for Python, Haskell, etc."
   (let ((keywords '((prism-match-whitespace 0 prism-face prepend))))
     (if prism-whitespace-mode
         (progn
-          (when-let* ((active-mode (prism-active-mode 'prism-whitespace-mode)))
-            (setf prism-whitespace-mode nil)
-            (user-error "%s is already active in this buffer" active-mode))
+          (dolist (mode (cl-remove 'prism-whitespace-mode (prism-active-mode)))
+            ;; Deactivate alternative mode so this one can be enabled.
+            (funcall mode -1))
           (unless prism-faces
             (prism-set-colors))
           (setf prism-syntax-table (prism-syntax-table (syntax-table))
