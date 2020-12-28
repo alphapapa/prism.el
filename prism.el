@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/prism.el
-;; Version: 0.2.2
+;; Version: 0.2.3
 ;; Package-Requires: ((emacs "26.1") (dash "2.14.1"))
 ;; Keywords: faces lisp
 
@@ -483,11 +483,16 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                               `(-setq (list-depth _ _ in-string-p comment-level-p _ _ _ comment-or-string-start)
                                  (syntax-ppss)))
                 (indent-depth ()
-                              `(cond ((save-excursion
-                                        (forward-line -1)
-                                        (looking-at-p (rx (1+ nonl) "\\" eol)))
-                                      (/ (current-indentation) (* 2 prism-whitespace-indent-offset)))
-                                     (t (/ (current-indentation) prism-whitespace-indent-offset))))
+                              `(or (save-excursion
+                                     (forward-line -1)
+                                     (when (looking-at-p (rx (1+ nonl) "\\" eol))
+                                       ;; Found backslask-continued line: move
+                                       ;; to where the continued line starts.
+                                       (cl-loop do (forward-line -1)
+                                                while (looking-at-p (rx (1+ nonl) "\\" eol)))
+                                       (forward-line 1)  ; Yes, go back down a line.
+                                       (/ (current-indentation) prism-whitespace-indent-offset)))
+                                   (/ (current-indentation) prism-whitespace-indent-offset)))
                 (depth-at ()
                           ;; Yes, this is entirely too complicated--just like Python's syntax in
                           ;; comparison to Lisp.  But, "Eww, all those parentheses!"  they say.
@@ -503,10 +508,22 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                                          (backward-sexp 1)
                                          (+ (nth 0 (syntax-ppss)) (indent-depth))))
                                       (t (indent-depth))))
-                             (_ (save-excursion
-                                  ;; Exit lists back to depth 0.
-                                  (goto-char (scan-lists (point) -1 (nth 0 (syntax-ppss))))
-                                  (+ list-depth (indent-depth))))))
+                             ;; This handles the case of code that is both enclosed in a
+                             ;; character-delimited list and indented on a new line within that
+                             ;; list to match the list's opening indentation (e.g. in Python,
+                             ;; when an if's condition is parenthesized and split across lines).
+                             (_ (let* ((current-depth (car (syntax-ppss)))  ; This `syntax-ppss' call *is* necessary!
+                                       (enclosing-list-depth
+                                        (pcase current-depth
+                                          (0 0)
+                                          (_ (save-excursion
+                                               ;; Escape current list and return the level of
+                                               ;; the enclosing list plus its indent depth.
+                                               (goto-char (scan-lists (point) -1 current-depth))
+                                               (+ (indent-depth) (car (syntax-ppss))))))))
+                                  (pcase enclosing-list-depth
+                                    (0 (+ list-depth (1- (indent-depth))))
+                                    (_  (+ enclosing-list-depth list-depth)))))))
                 (comment-p ()
                            ;; This macro should only be used after `parse-syntax'.
                            `(or comment-level-p (looking-at-p (rx (or (syntax comment-start)

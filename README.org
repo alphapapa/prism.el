@@ -61,6 +61,18 @@ This example shows Python with =prism-comments= enabled (showing theme =doom-cha
 
 [[images/python-doom-challenger-deep.png]]
 
+Here, even though these ~if~ statements' conditions are parenthesized and split across lines, they are colorized at the same logical depth--and the parts of them in brackets, at a deeper logical depth, are also colorized at the proper depth:
+
+[[images/python-3.png]]
+
+Thanks to Emacs's mode-specific syntax tables, even complex shell scripts are properly interpreted.  In this example, even though the subsequent lines of this shell function are indented more deeply than the first, they are at the same logical depth because of their being continued lines, so they are colorized at the same initial depth, with their parenthesized and bracketed portions colorized at deeper depths (showing theme =doom-solarized-dark= with a reversed-rainbow palette):
+
+[[images/shell-1.png]]
+
+And in this function, even though Emacs indents each part of the the doubly continued line more deeply, they're colorized with the same color, because they're at the same logical depth:
+
+[[images/shell-2.png]]
+
 It even works in Haskell (showing theme =doom-molokai=):
 
 [[images/haskell-doom-molokai.png]]
@@ -180,6 +192,11 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 :PROPERTIES:
 :TOC:      0
 :END:
+
+** 0.2.3
+
+*Fixed*
++  Depth of logically continued lines (e.g. in Python, an expression split across lines) and physically continued lines (e.g. in Shell, a statement split across backslash-continued lines) in =prism-whitespace-mode=.
 
 ** 0.2.2
 
