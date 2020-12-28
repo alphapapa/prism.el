@@ -193,6 +193,10 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 :TOC:      0
 :END:
 
+** 0.3-pre
+
+Nothing new yet.
+
 ** 0.2.3
 
 *Fixed*
