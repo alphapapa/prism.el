@@ -41,6 +41,20 @@ It uses other methods, including modified syntax tables, and it sets both the =f
 
 Mentioned at https://www.reddit.com/r/emacs/comments/cxd60i/pareditsmartparens_for_all_languages_using/
 
+** More code examples
+
+*** =anagrams-for=
+
+Based on the [[https://exercism.io/tracks/python/exercises/anagram][exercise on Exercism]], this shows how easy Prism makes it to see which arguments go with which functions: the ~nil~ is an argument to ~append~, and the ~#'<~ is an argument to ~sort~.
+
+#+BEGIN_SRC elisp
+  (defun anagrams-for (word anagrams)
+    (setf word (sort (append (vconcat (downcase word)) nil) #'<))
+    (cl-loop for anagram in anagrams
+             when (equal word (sort (append (vconcat (downcase anagram)) nil) #'<))
+             collect anagram))
+#+END_SRC
+
 * Samples
 
 #+BEGIN_SRC elisp
