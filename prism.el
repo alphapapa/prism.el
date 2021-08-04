@@ -514,7 +514,7 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                              ;; character-delimited list and indented on a new line within that
                              ;; list to match the list's opening indentation (e.g. in Python,
                              ;; when an if's condition is parenthesized and split across lines).
-                             (_ (let* ((current-depth (car (syntax-ppss)))  ; This `syntax-ppss' call *is* necessary!
+                             (_ (let* ((current-depth (car (syntax-ppss)))  ;; This `syntax-ppss' call *is* necessary!
                                        (enclosing-list-depth
                                         (pcase current-depth
                                           (0 0)
@@ -685,12 +685,12 @@ removed."
           (desaturations prism-desaturations) (lightens prism-lightens)
           (comments-fn (lambda (color)
                          (--> color
-                              (color-desaturate-name it 30)
-                              (color-lighten-name it -10))))
+                           (color-desaturate-name it 30)
+                           (color-lighten-name it -10))))
           (strings-fn (lambda (color)
                         (--> color
-                             (color-desaturate-name it 20)
-                             (color-lighten-name it 10)))))
+                          (color-desaturate-name it 20)
+                          (color-lighten-name it 10)))))
   "Set `prism' faces.  Call after loading a new theme.
 Call also when COLORS has been set to a list of faces and those
 faces have been modified.
@@ -751,24 +751,24 @@ modified as desired for comments or strings, respectively."
                           (--when-let (alist-get face face-remapping-alist)
                             (face-remap-remove-relative (cons (-last-item it) (car (butlast it)))))))
     (let* ((colors (->> colors
-                        (--map (pcase-exhaustive it
-                                 ((pred facep) (face-attribute it :foreground nil 'default))
-                                 ((pred stringp) it)
-                                 ((pred functionp) (funcall it))
-                                 (`(themed ,color) (prism-theme-color color))))
-                        (--remove (string-prefix-p "unspecified-" it))
-                        -cycle
-                        (prism-modify-colors :num num
-                                             :desaturations desaturations
-                                             :lightens lightens
-                                             :colors)
-                        ;; Use only two digits per component.  HTML export of code (e.g. with Org
-                        ;; Export, htmlize, etc.)  doesn't work well with colors like "#01234567890a",
-                        ;; even if Emacs can handle them internally.  Maybe it's Web browsers that
-                        ;; can't handle them.  Anyway, we shouldn't use them if it breaks that.
-                        (--map (--> (color-name-to-rgb it)
-                                    (-let (((r g b) it))
-                                      (color-rgb-to-hex r g b 2)))))))
+                     (--map (pcase-exhaustive it
+                              ((pred facep) (face-attribute it :foreground nil 'default))
+                              ((pred stringp) it)
+                              ((pred functionp) (funcall it))
+                              (`(themed ,color) (prism-theme-color color))))
+                     (--remove (string-prefix-p "unspecified-" it))
+                     -cycle
+                     (prism-modify-colors :num num
+                                          :desaturations desaturations
+                                          :lightens lightens
+                                          :colors)
+                     ;; Use only two digits per component.  HTML export of code (e.g. with Org
+                     ;; Export, htmlize, etc.)  doesn't work well with colors like "#01234567890a",
+                     ;; even if Emacs can handle them internally.  Maybe it's Web browsers that
+                     ;; can't handle them.  Anyway, we shouldn't use them if it breaks that.
+                     (--map (--> (color-name-to-rgb it)
+                              (-let (((r g b) it))
+                                (color-rgb-to-hex r g b 2)))))))
       (cl-macrolet ((set-vars (&rest pairs)
                               `(progn
                                  ,@(cl-loop for (var val) on pairs by #'cddr
@@ -803,9 +803,9 @@ unique colors from `font-lock' faces)."
 	       (name) (propertize name 'face (list :foreground name)))
               (faces  ;; Return list of used colors with foreground color face applied.
 	       () (->> (face-list)
-                       (--select (and (string-prefix-p "prism-level" (symbol-name it))
-                                      (string-match-p (rx digit eos) (symbol-name it))))
-                       nreverse (-map #'face-foreground) (-map #'colorize)))
+                    (--select (and (string-prefix-p "prism-level" (symbol-name it))
+                                   (string-match-p (rx digit eos) (symbol-name it))))
+                    nreverse (-map #'face-foreground) (-map #'colorize)))
               (select-colors (colors threshold)
                              ;; Return shuffled list of COLORS ensuring that the
                              ;; distance between each one meets THRESHOLD.
@@ -831,10 +831,10 @@ unique colors from `font-lock' faces)."
     (let* ((faces (--select (string-prefix-p "font-lock-" (symbol-name it))
                             (face-list)))
            (colors (->> faces
-                        (--map (face-attribute it :foreground))
-                        (--remove (eq 'unspecified it))
-                        (-remove #'color-gray-p)
-			(-select #'background-contrast-p)))
+                     (--map (face-attribute it :foreground))
+                     (--remove (eq 'unspecified it))
+                     (-remove #'color-gray-p)
+                     (-select #'background-contrast-p)))
 	   (colors (pcase arg
 		     ((pred integerp) (-take arg (prism-shuffle (-uniq colors))))
 		     ('(4) colors)
@@ -856,10 +856,10 @@ unique colors from `font-lock' faces)."
                          prism-comments-fn
                        (lambda (color)
                          (--> color
-                              ;; The default function desaturates by 30%, but 40%
-                              ;; seems to help a bit when using random colors.
-                              (color-desaturate-name it 40)
-                              (color-lighten-name it -10)))))
+                           ;; The default function desaturates by 30%, but 40%
+                           ;; seems to help a bit when using random colors.
+                           (color-desaturate-name it 40)
+                           (color-lighten-name it -10)))))
       (message "Randomized%s colors: %s\nFaces: %s"
                (pcase arg
 		 ('(4) "")
@@ -886,17 +886,17 @@ arguments to set the same faces."
   "Return list of NUM colors modified according to DESATURATIONS and LIGHTENS."
   (cl-flet ((modify-color (color desaturate lighten)
                           (--> color
-                               (if (> desaturate 0)
-                                   (color-desaturate-name it desaturate)
-                                 it)
-                               (if (> lighten 0)
-                                   (color-lighten-name it lighten)
-                                 it)
-                               ;; FIXME: It seems that these two functions called in sequence
-                               ;; always modify the color, e.g. #ff2afc becomes #fe29fb.
-                               (color-name-to-rgb it)
-                               (-let (((r g b) it))
-                                 (color-rgb-to-hex r g b 2)))))
+                            (if (> desaturate 0)
+                                (color-desaturate-name it desaturate)
+                              it)
+                            (if (> lighten 0)
+                                (color-lighten-name it lighten)
+                              it)
+                            ;; FIXME: It seems that these two functions called in sequence
+                            ;; always modify the color, e.g. #ff2afc becomes #fe29fb.
+                            (color-name-to-rgb it)
+                            (-let (((r g b) it))
+                              (color-rgb-to-hex r g b 2)))))
     (when (< (length desaturations) num)
       (setf desaturations (prism-expand-list num desaturations)))
     (when (< (length lightens) num)
@@ -937,8 +937,8 @@ necessary."
                                    (1- length))))
          (final-element-p (not (zerop (mod new-length length))))
          (new-list (->> list
-                        (--map (-repeat repeat-n it))
-                        (-flatten))))
+                     (--map (-repeat repeat-n it))
+                     (-flatten))))
     (if final-element-p
         (-snoc new-list (-last-item list))
       new-list)))
