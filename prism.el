@@ -521,6 +521,14 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                                           (_ (save-excursion
                                                ;; Escape current list and return the level of
                                                ;; the enclosing list plus its indent depth.
+
+                                               ;; FIXME: When a preceding comment contains an apostrophe, this
+                                               ;; call to `scan-lists' interprets the apostrophe as delimiting a
+                                               ;; list, and it skips back to another preceding apostrophe, even
+                                               ;; inside a different top-level form, which causes the wrong
+                                               ;; depth to be calculated. ... Well, good news, I guess: this
+                                               ;; happens on Emacs 26.3 but not on Emacs 27.1.  I guess
+                                               ;; something was fixed, which means that it's not a bug in Prism.
                                                (goto-char (scan-lists (point) -1 current-depth))
                                                (+ (indent-depth) (car (syntax-ppss))))))))
                                   (pcase enclosing-list-depth
