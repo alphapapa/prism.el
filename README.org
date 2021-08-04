@@ -28,6 +28,13 @@
 * Screenshots
 
 ** Lisp and C-like languages
+:PROPERTIES:
+:TOC:      :include descendants :depth 1
+:END:
+:CONTENTS:
+- [[#colorize-parens-distinctly][Colorize parens distinctly]]
+- [[#highlighting-mistakes][Highlighting mistakes]]
+:END:
 
 One of the benefits of =prism= is making it easy to see which list elements are in.  For example, in this excerpt from =org-get-entries-from-diary= from =org-agenda.el=, the =funcall='s first argument is an unusually indented =if= form, and the indentation nearly aligns the =funcall='s second argument, =date=, at the column where the =if='s /else/ clause would usually be.  But with depth-based colorization, it's easy to see that =date= and =1= are arguments to =funcall=, not part of the =if= form.
 
@@ -60,6 +67,12 @@ Inspired by [[https://github.com/tarsius/paren-face][paren-face]], when the opti
 And here, at 25%:
 
 [[images/parens-0.25.png]]
+
+*** Highlighting mistakes
+
+In this screenshot, the second and third top-level forms are colorized differently than the first, which points to a programmer error: the first ~defun~'s closing parens are on a line after a comment.
+
+[[images/prism-shows-mistakes.png]]
 
 ** Whitespace-sensitive languages
 
