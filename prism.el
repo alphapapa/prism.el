@@ -109,6 +109,9 @@
 (defvar prism-faces-strings nil
   "Alist mapping depth levels to string faces.")
 
+(defvar prism-faces-parens nil
+  "Alist mapping depth levels to parens faces.")
+
 (defvar prism-face nil
   "Set by `prism-match' during fontification.")
 
@@ -134,6 +137,8 @@ for `python-mode'.")
 (defvar prism-num-faces)
 (defvar prism-comments-fn)
 (defvar prism-comments)
+(defvar prism-parens)
+(defvar prism-parens-fn)
 (defvar prism-strings-fn)
 (defvar prism-strings)
 (defvar prism-whitespace-mode-indents)
@@ -357,9 +362,14 @@ Matches up to LIMIT."
                 (comment-p ()
                            ;; This macro should only be used after `parse-syntax'.
                            `(or comment-level-p (looking-at-p (rx (syntax comment-start)))))
+                (looking-at-paren-p
+                 () `(looking-at-p (rx (or (syntax open-parenthesis)
+                                           (syntax close-parenthesis)))))
                 (face-at ()
                          ;; Return face to apply.  Should be called with point at `start'.
-                         `(cond ((comment-p)
+                         `(cond ((and prism-parens (looking-at-paren-p))
+                                 (alist-get depth prism-faces-parens))
+                                ((comment-p)
                                  (pcase depth
                                    (0 'font-lock-comment-face)
                                    (_ (if prism-faces-comments
@@ -468,6 +478,13 @@ Matches up to LIMIT."
                     ;; to any string or comment found before it.
                     (when (re-search-forward (rx (syntax string-quote)) end t)
                       (setf end (match-beginning 0))))))
+            (when prism-parens
+              (unless (= 1 (- end start))
+                ;; Not fontifying a single open paren (i.e. we are trying to fontify more
+                ;; than just an open paren): so if we are looking at one, fontify only it.
+                (when (eq 4 (syntax-class (syntax-after (1- end))))
+                  ;; End is past an open paren: back up one character.
+                  (cl-decf end))))
             (if (and (comment-p) (= 0 depth))
                 (setf prism-face nil)
               (setf prism-face (face-at)))
@@ -698,7 +715,9 @@ removed."
           (strings-fn (lambda (color)
                         (--> color
                           (color-desaturate-name it 20)
-                          (color-lighten-name it 10)))))
+                          (color-lighten-name it 10))))
+          (parens-fn (lambda (color)
+                       (prism-blend color (face-attribute 'default :background) 0.5))))
   "Set `prism' faces.  Call after loading a new theme.
 Call also when COLORS has been set to a list of faces and those
 faces have been modified.
@@ -722,9 +741,10 @@ DESATURATIONS and LIGHTENS are lists of integer percentages
 applied to colors as depth increases; they need not be as long as
 NUM, because they are extrapolated automatically.
 
-COMMENTS-FN and STRINGS-FN are functions of one argument, a color
-name or hex RGB string, which return the color having been
-modified as desired for comments or strings, respectively."
+COMMENTS-FN, PARENS-FN, and STRINGS-FN are functions of one
+argument, a color name or hex RGB string, which return the color
+having been modified as desired for comments, parens, or strings,
+respectively."
   (declare (indent defun))
   (interactive)
   (when (called-interactively-p 'any)
@@ -789,7 +809,8 @@ modified as desired for comments or strings, respectively."
                                                         (set (make-local-variable ',var) ,val)))))))
         (set-vars prism-faces (faces colors)
                   prism-faces-strings (faces colors "strings" strings-fn)
-                  prism-faces-comments (faces colors "comments" comments-fn)))
+                  prism-faces-comments (faces colors "comments" comments-fn)
+                  prism-faces-parens (faces colors "parens" parens-fn)))
       (when (and save (not local))
         ;; Save arguments for later saving as customized variables,
         ;; including the unmodified (but shuffled) colors.
@@ -798,7 +819,8 @@ modified as desired for comments or strings, respectively."
               prism-lightens lightens
               prism-num-faces num
               prism-comments-fn comments-fn
-              prism-strings-fn strings-fn)
+              prism-strings-fn strings-fn
+              prism-parens-fn parens-fn)
         (prism-save-colors)))))
 
 (defun prism-randomize-colors (&optional arg)
@@ -1049,6 +1071,15 @@ Receives one argument, a color name or hex RGB string."
   "Function which adjusts colors for strings.
 Receives one argument, a color name or hex RGB string."
   :type 'function
+  :set #'prism-customize-set)
+
+(defcustom prism-parens nil
+  "Whether to colorize parens separately.
+When disabled, parens are colorized with the same face as the
+other elements at their depth.  When enabled, parens may be
+colorized distinctly, e.g. to make them fade away or stand out.
+See the PARENS-FN argument to the `prism-set-colors' function."
+  :type 'boolean
   :set #'prism-customize-set)
 
 (defcustom prism-colors

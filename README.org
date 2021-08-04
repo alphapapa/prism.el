@@ -51,6 +51,16 @@ Into this (using theme =doom-outrun-electric=).  Note how the =bind= is the same
 
 [[images/js-after.png]]
 
+*** Colorize parens distinctly
+
+Inspired by [[https://github.com/tarsius/paren-face][paren-face]], when the option =prism-parens= is enabled, parens (any character classified as parenthesis-like syntax by the buffer's mode) may be colored distinctly from other text, e.g. to make them fade away or stand out.  For example, this shows parens being blended into the background with 50% opacity:
+
+[[images/parens-0.5.png]]
+
+And here, at 25%:
+
+[[images/parens-0.25.png]]
+
 ** Whitespace-sensitive languages
 
 For whitespace-sensitive languages, =prism-whitespace-mode= determines depth by a combination of indentation and list nesting.  For example, Python (showing theme =doom-vibrant= with these faces set in variable =prism-colors=: =font-lock-type-face=, =font-lock-function-name-face=, =font-lock-constant-face=, and =font-lock-keyword-face=):
@@ -194,6 +204,9 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 :END:
 
 ** 0.3-pre
+
+*Added*
++  Option =prism-parens=, which allows parenthesis characters (by syntax type, not only =( )=) to be colorized differently (e.g. to make them fade away or stand out).  The function =prism-set-colors='s new argument, =parens-fn=, defaults to one which fades parens into the background (which only applies when the option is enabled).
 
 *Changed*
 +  Both =prism-mode= and =prism-whitespace-mode= deactivate the other mode when activated, allowing them to be switched between without having to disable one first.
