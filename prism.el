@@ -707,17 +707,11 @@ removed."
     (&key shuffle save local
           (num prism-num-faces) (colors prism-colors)
           (attribute prism-color-attribute)
-          (desaturations prism-desaturations) (lightens prism-lightens)
-          (comments-fn (lambda (color)
-                         (--> color
-                           (color-desaturate-name it 30)
-                           (color-lighten-name it -10))))
-          (strings-fn (lambda (color)
-                        (--> color
-                          (color-desaturate-name it 20)
-                          (color-lighten-name it 10))))
-          (parens-fn (lambda (color)
-                       (prism-blend color (face-attribute 'default :background) 0.5))))
+          (desaturations prism-desaturations)
+          (lightens prism-lightens)
+          (comments-fn prism-comments-fn)
+          (strings-fn prism-strings-fn)
+          (parens-fn prism-parens-fn))
   "Set `prism' faces.  Call after loading a new theme.
 Call also when COLORS has been set to a list of faces and those
 faces have been modified.
@@ -1068,6 +1062,14 @@ Receives one argument, a color name or hex RGB string."
 (defcustom prism-strings-fn
   (lambda (color)
     (prism-blend color "white" 0.5))
+  "Function which adjusts colors for strings.
+Receives one argument, a color name or hex RGB string."
+  :type 'function
+  :set #'prism-customize-set)
+
+(defcustom prism-parens-fn
+  (lambda (color)
+    (prism-blend color (face-attribute 'default :background) 0.5))
   "Function which adjusts colors for strings.
 Receives one argument, a color name or hex RGB string."
   :type 'function
