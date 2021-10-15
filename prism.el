@@ -1082,6 +1082,13 @@ See the PARENS-FN argument to the `prism-set-colors' function."
   :type 'boolean
   :set #'prism-customize-set)
 
+(defcustom prism-parens-fn
+  (lambda (color)
+    (prism-blend color (face-attribute 'default :background) 0.5))
+  "Function which adjusts colors for strings.  Receives one argument, a color name or hex RGB string."
+  :type 'function
+  :set #'prism-customize-set)
+
 (defcustom prism-colors
   (list 'font-lock-type-face 'font-lock-function-name-face
         'font-lock-keyword-face 'font-lock-doc-face)
