@@ -471,8 +471,12 @@ Matches up to LIMIT."
               (or (unless (or in-string-p found-string-p found-comment-p)
                     ;; Neither in a string nor looking at nor in a
                     ;; comment: set `end' to any comment found before it.
-                    (when (re-search-forward (rx (syntax comment-start)) end t)
-                      (setf end (match-beginning 0))))
+                    (when (re-search-forward (rx (or (syntax string-quote) (syntax comment-start))) end t)
+                      (unless (equal '(7) (syntax-after (match-beginning 0)))
+                        ;; Not in a string: set end to the beginning
+                        ;; of the comment (this avoids stopping at
+                        ;; comment-starts inside strings).
+                        (setf end (match-beginning 0)))))
                   (unless (or found-comment-p found-string-p)
                     ;; Neither in nor looking at a comment: set `end'
                     ;; to any string or comment found before it.

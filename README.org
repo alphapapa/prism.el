@@ -224,6 +224,9 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 *Changed*
 +  Both =prism-mode= and =prism-whitespace-mode= deactivate the other mode when activated, allowing them to be switched between without having to disable one first.
 
+*Fixed*
++  Code comments in strings (or what appeared to be, e.g. ~"Foo; bar"~ in Lisp) were fontified as comments rather than strings.
+
 ** 0.2.3
 
 *Fixed*
