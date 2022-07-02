@@ -2,6 +2,10 @@
 
 * Tasks
 
+** TODO [#A] redisplay signals "end of buffer" when ~prism-comments~ is nil :bug:
+
+Everything still works, but this shouldn't happen.
+
 ** TODO Add color shuffle command
 
 This is very useful when changing themes, because the default set of faces may not present good contrast between levels, and sometimes shuffling a few times produces a great set of colors.
