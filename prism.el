@@ -909,6 +909,7 @@ Function `prism-set-colors' does not save its argument values
 permanently.  This command saves them using the customization
 system so that `prism-set-colors' can then be called without
 arguments to set the same faces."
+  ;; FIXME: Make this interactive.
   (cl-letf (((symbol-function 'custom-save-all)
              (symbol-function 'ignore)))
     ;; Avoid saving the file for each variable, which is very slow.
