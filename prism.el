@@ -357,7 +357,7 @@ For `font-lock-extend-region-functions'."
 Matches up to LIMIT."
   ;;  (prism-debug (current-buffer) (point) limit)
   (cl-macrolet ((parse-syntax ()
-                              `(-setq (depth _ _ in-string-p comment-level-p)
+                              `(-setq (depth _ _ in-string-p comment-level-p  _ _ _ comment-or-string-start)
                                  (syntax-ppss)))
                 (comment-p ()
                            ;; This macro should only be used after `parse-syntax'.
