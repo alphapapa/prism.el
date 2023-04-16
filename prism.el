@@ -227,7 +227,7 @@ modes."
 
 ;;;###autoload
 (define-minor-mode prism-mode
-  "Disperse lisp forms (and other non-whitespace-sensitive syntax) into a spectrum of colors according to depth.
+  "Disperse code into a spectrum of colors according to depth.
 Depth is determined by list nesting.  Suitable for Lisp, C-like
 languages, etc."
   :global nil
@@ -261,9 +261,10 @@ languages, etc."
 
 ;;;###autoload
 (define-minor-mode prism-whitespace-mode
-  "Disperse whitespace-sensitive syntax into a spectrum of colors according to depth.
+  "Disperse code into a spectrum of colors according to depth.
 Depth is determined by indentation and list nesting.  Suitable
-for Python, Haskell, etc."
+for whitespace-sensitive languages like Python, Haskell, shell,
+etc."
   :global nil
   (let ((keywords '((prism-match-whitespace 0 prism-face prepend))))
     (if prism-whitespace-mode
