@@ -256,7 +256,8 @@ languages, etc."
         ;; Don't remove advice if `prism' is still active in any buffers.
         (advice-remove #'load-theme #'prism-after-theme)
         (advice-remove #'disable-theme #'prism-after-theme))
-      (remove-hook 'font-lock-extend-region-functions #'prism-extend-region 'local))))
+      (remove-hook 'font-lock-extend-region-functions #'prism-extend-region 'local)
+      (font-lock-flush))))
 
 ;;;###autoload
 (define-minor-mode prism-whitespace-mode
@@ -294,7 +295,8 @@ for Python, Haskell, etc."
         ;; Don't remove advice if `prism' is still active in any buffers.
         (advice-remove #'load-theme #'prism-after-theme)
         (advice-remove #'disable-theme #'prism-after-theme))
-      (remove-hook 'font-lock-extend-region-functions #'prism-extend-region 'local))))
+      (remove-hook 'font-lock-extend-region-functions #'prism-extend-region 'local)
+      (font-lock-flush))))
 
 ;;;; Functions
 
