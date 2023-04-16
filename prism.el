@@ -495,6 +495,9 @@ Matches up to LIMIT."
                 (setf prism-face nil)
               (setf prism-face (face-at)))
             (goto-char end)
+            (unless (> (point) start)
+              ;; Prevent end-of-buffer error in `font-lock-fontify-keywords-region'.
+              (cl-decf start))
             (set-match-data (list start end (current-buffer)))
             ;;  (prism-debug (current-buffer) "END" start end)
             ;; Be sure to return non-nil!
@@ -681,6 +684,9 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                 (setf prism-face nil)
               (setf prism-face (face-at)))
             (goto-char end)
+            (unless (> (point) start)
+              ;; Prevent end-of-buffer error in `font-lock-fontify-keywords-region'.
+              (cl-decf start))
             (set-match-data (list start end (current-buffer)))
             ;; Be sure to return non-nil!
             t))))))
