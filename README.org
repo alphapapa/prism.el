@@ -228,6 +228,7 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 +  Code comments in strings (or what appeared to be, e.g. ~"Foo; bar"~ in Lisp) were fontified as comments rather than strings.
 +  End-of-buffer errors signaled in ~font-lock-fontify-keywords-region~.  (Fixes [[https://github.com/alphapapa/prism.el/issues/6][#6]].  With thanks to [[https://github.com/vuori][@vuori]] and [[https://github.com/piknik][@piknik]].)
 +  Call ~font-lock-flush~ when disabling modes.  (Thanks to [[https://github.com/josephmturner][Joseph Turner]] for reporting.)
++  Infinite loop with certain buffer contents (involving strings directly adjacent to other tokens).  (Fixes [[https://github.com/alphapapa/prism.el/issues/18][#18]].  Thanks to [[https://github.com/nathanvy][@nathanvy]] for reporting.)
 
 ** 0.2.3
 

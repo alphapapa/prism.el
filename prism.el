@@ -463,7 +463,27 @@ Matches up to LIMIT."
                                ;; buffer before, which might mean that Emacs can handle that.
                                ;; I think the important thing is not to hang Emacs, to always
                                ;; either return nil or advance point to `limit'.
-                               limit))))
+                               limit))
+                         (or (unless found-string-p
+                               ;; This additional form is regrettable, but it seems necessary
+                               ;; to fix <https://github.com/alphapapa/prism.el/issues/18>.
+                               ;; However, there might be a better way to refactor this whole
+                               ;; calculation of the END position, so someday that should be
+                               ;; tried.  (Or maybe just use tree-sitter in Emacs 29+.)
+                               (save-excursion
+                                 (when (ignore-errors
+                                         (re-search-forward (rx (or (syntax string-quote)
+                                                                    (syntax comment-start)))
+                                                            (scan-lists (point) 1 1) t))
+                                   ;; Found string or comment in current list: stop at beginning of it.
+                                   (pcase (syntax-after (match-beginning 0))
+                                     ('(11)
+                                      (setf found-comment-p t)
+                                      (match-beginning 0))
+                                     (`(7 . ,_)
+                                      (setf found-string-p t)
+                                      (match-beginning 0))))))
+                             limit)))
           (when (< end start)
             ;; Set search bound properly when `start' is greater than
             ;; `end' (i.e. when `start' is moved past `limit', I think).
