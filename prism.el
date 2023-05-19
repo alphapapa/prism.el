@@ -446,7 +446,13 @@ Matches up to LIMIT."
                                      ;; At end of string: break out of it.
                                      (forward-char 1)
                                    ;; At beginning of string: skip it.
-                                   (forward-sexp 1))
+                                   (condition-case err
+                                       (forward-sexp 1)
+                                     (scan-error
+                                      ;; An unclosed string: move past it.
+                                      (goto-char (cadddr err)))))
+                                 ;; TODO: Is it right to set found-string-p in
+                                 ;; the case of finding an unclosed string?
                                  (setf found-string-p t)
                                  (point))
                                (ignore-errors
@@ -471,10 +477,12 @@ Matches up to LIMIT."
                                ;; calculation of the END position, so someday that should be
                                ;; tried.  (Or maybe just use tree-sitter in Emacs 29+.)
                                (save-excursion
-                                 (when (ignore-errors
-                                         (re-search-forward (rx (or (syntax string-quote)
-                                                                    (syntax comment-start)))
-                                                            (scan-lists (point) 1 1) t))
+                                 (when (re-search-forward (rx (or (syntax string-quote)
+                                                                  (syntax comment-start)))
+                                                          (or (ignore-errors
+                                                                (scan-lists (point) 1 1))
+                                                              limit)
+                                                          t)
                                    ;; Found string or comment in current list: stop at beginning of it.
                                    (pcase (syntax-after (match-beginning 0))
                                      ('(11)
