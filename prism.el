@@ -388,6 +388,7 @@ Matches up to LIMIT."
     (with-syntax-table prism-syntax-table
       (catch 'eobp
         (let ((parse-sexp-ignore-comments t)
+              (starting-pos (point))
               depth in-string-p comment-level-p comment-or-string-start start end
               found-comment-p found-string-p)
           (while ;; Skip to start of where we should match.
@@ -532,6 +533,10 @@ Matches up to LIMIT."
             (set-match-data (list start end (current-buffer)))
             ;;  (prism-debug (current-buffer) "END" start end)
             ;; Be sure to return non-nil!
+            (unless (> (point) starting-pos)
+              (prism-mode -1)
+              (error "prism: Infinite loop detected in `prism-match' (buffer:%S point:%S).  Please report this bug"
+                     (current-buffer) (point)))
             t))))))
 
 (defun prism-match-whitespace (limit)
@@ -616,6 +621,7 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
       (unless (eobp)
         ;; Not at end-of-buffer: start matching.
         (let ((parse-sexp-ignore-comments t)
+              (starting-pos (point))
               list-depth in-string-p comment-level-p comment-or-string-start start end
               found-comment-p found-string-p)
           (while ;; Skip to start of where we should match.
@@ -719,6 +725,10 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
               ;; Prevent end-of-buffer error in `font-lock-fontify-keywords-region'.
               (cl-decf start))
             (set-match-data (list start end (current-buffer)))
+            (unless (> (point) starting-pos)
+              (prism-mode -1)
+              (error "prism: Infinite loop detected in `prism-match-whitespace' (buffer:%S point:%S).  Please report this bug"
+                     (current-buffer) (point)))
             ;; Be sure to return non-nil!
             t))))))
 
