@@ -470,7 +470,7 @@ Matches up to LIMIT."
                                ;; I think the important thing is not to hang Emacs, to always
                                ;; either return nil or advance point to `limit'.
                                limit))
-                         (or (unless found-string-p
+                         (or (unless (or found-string-p found-comment-p)
                                ;; This additional form is regrettable, but it seems necessary
                                ;; to fix <https://github.com/alphapapa/prism.el/issues/18>.
                                ;; However, there might be a better way to refactor this whole
