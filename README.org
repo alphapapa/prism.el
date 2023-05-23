@@ -221,6 +221,9 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 *Added*
 + Failsafe to prevent bugs from causing infinte loops in Emacs.
 
+*Fixed*
++ Infinite loop with certain buffer contents.  (Further fixes [[https://github.com/alphapapa/prism.el/issues/18][#18]].)  (Thanks to [[https://github.com/JasZhe][Jason Zhen]] and [[https://github.com/fkr-0][fkr-0]] for reporting.)
+
 ** 0.3
 
 *Added*
