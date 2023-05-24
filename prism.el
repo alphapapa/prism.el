@@ -364,7 +364,21 @@ Matches up to LIMIT."
                                  (syntax-ppss)))
                 (comment-p ()
                            ;; This macro should only be used after `parse-syntax'.
-                           `(or comment-level-p (looking-at-p (rx (syntax comment-start)))))
+                           `(or comment-level-p (looking-at-p (rx (syntax comment-start)))
+                                ;; Not all language modes' syntax tables seem to allow searching
+                                ;; for comment-start, comment-end, or comment-delimiter
+                                ;; characters, so we must use ppss to determine whether we're
+                                ;; looking at a comment start.  And since some languages use
+                                ;; multiples of a character to mark a comment start (e.g. "//"),
+                                ;; we must also test at 2 characters past the point.  And since
+                                ;; that position could be past the end of the buffer, we must
+                                ;; ignore such an error.
+                                (condition-case nil
+                                    (or (save-excursion
+                                          (ppss-comment-depth (syntax-ppss (1+ (point)))))
+                                        (save-excursion
+                                          (ppss-comment-depth (syntax-ppss (+ 2 (point))))))
+                                  (args-out-of-range nil))))
                 (looking-at-paren-p
                  () `(looking-at-p (rx (or (syntax open-parenthesis)
                                            (syntax close-parenthesis)))))
@@ -439,6 +453,8 @@ Matches up to LIMIT."
                                  (cl-decf depth)
                                  (1+ start))
                                (when (and prism-comments (comment-p))
+                                 (when comment-or-string-start
+                                   (goto-char comment-or-string-start))
                                  (forward-comment (buffer-size))
                                  (setf found-comment-p t)
                                  (point))
@@ -599,7 +615,21 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                 (comment-p ()
                            ;; This macro should only be used after `parse-syntax'.
                            `(or comment-level-p (looking-at-p (rx (or (syntax comment-start)
-                                                                      (syntax comment-delimiter))))))
+                                                                      (syntax comment-delimiter))))
+                                ;; Not all language modes' syntax tables seem to allow searching
+                                ;; for comment-start, comment-end, or comment-delimiter
+                                ;; characters, so we must use ppss to determine whether we're
+                                ;; looking at a comment start.  And since some languages use
+                                ;; multiples of a character to mark a comment start (e.g. "//"),
+                                ;; we must also test at 2 characters past the point.  And since
+                                ;; that position could be past the end of the buffer, we must
+                                ;; ignore such an error.
+                                (condition-case nil
+                                    (or (save-excursion
+                                          (ppss-comment-depth (syntax-ppss (1+ (point)))))
+                                        (save-excursion
+                                          (ppss-comment-depth (syntax-ppss (+ 2 (point))))))
+                                  (args-out-of-range nil))))
                 (face-at ()
                          ;; Return face to apply.  Should be called with point at `start'.
                          `(let ((depth (depth-at)))

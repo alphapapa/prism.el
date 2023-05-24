@@ -218,7 +218,8 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 
 ** 0.3.2-pre
 
-Nothing new yet.
+*Fixed*
++ When ~prism-comments~ is enabled in major modes whose syntax tables do not allow searching for comment delimiters.  (Related to [[https://github.com/alphapapa/prism.el/issues/18][#18]].)  (Thanks to [[https://github.com/JasZhe][Jason Zhen]] for reporting.)
 
 ** 0.3.1
 
