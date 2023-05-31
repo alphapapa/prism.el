@@ -935,7 +935,7 @@ unique colors from `font-lock' faces)."
                                            (setf colors (-remove-at index colors)))
                                       finally return selected))
 	      (background-contrast-p (color &optional (min-distance 32768))
-				     (>= (color-distance color (face-attribute 'default :background))
+				     (>= (color-distance color (face-attribute 'default :background nil 'default))
 					 min-distance))
               (option-customized-p
 	       (option) (not (equal (pcase-exhaustive (get option 'standard-value)
@@ -944,7 +944,7 @@ unique colors from `font-lock' faces)."
     (let* ((faces (--select (string-prefix-p "font-lock-" (symbol-name it))
                             (face-list)))
            (colors (->> faces
-                     (--map (face-attribute it :foreground))
+                     (--map (face-attribute it :foreground nil 'default))
                      (--remove (eq 'unspecified it))
                      (-remove #'color-gray-p)
                      (-select #'background-contrast-p)))
@@ -1139,7 +1139,7 @@ the appearance of e.g. commented Lisp headings."
 
 (defcustom prism-comments-fn
   (lambda (color)
-    (prism-blend color (face-attribute 'font-lock-comment-face :foreground) 0.25))
+    (prism-blend color (face-attribute 'font-lock-comment-face :foreground nil 'default) 0.25))
   "Function which adjusts colors for comments.
 Receives one argument, a color name or hex RGB string."
   :type 'function
