@@ -134,6 +134,7 @@ for `python-mode'.")
 (defvar prism-color-distance)
 (defvar prism-desaturations)
 (defvar prism-lightens)
+(defvar prism-opacities)
 (defvar prism-num-faces)
 (defvar prism-comments-fn)
 (defvar prism-comments)
@@ -790,17 +791,12 @@ removed."
     (&key shuffle save local
           (num prism-num-faces) (colors prism-colors)
           (attribute prism-color-attribute)
-          (desaturations prism-desaturations) (lightens prism-lightens)
-          (comments-fn (lambda (color)
-                         (--> color
-                           (color-desaturate-name it 30)
-                           (color-lighten-name it -10))))
-          (strings-fn (lambda (color)
-                        (--> color
-                          (color-desaturate-name it 20)
-                          (color-lighten-name it 10))))
-          (parens-fn (lambda (color)
-                       (prism-blend color (face-attribute 'default :background) 0.5))))
+          (desaturations prism-desaturations)
+          (lightens prism-lightens)
+          (opacities prism-opacities)
+          (comments-fn prism-comments-fn)
+          (strings-fn prism-strings-fn)
+          (parens-fn prism-parens-fn))
   "Set `prism' faces.  Call after loading a new theme.
 Call also when COLORS has been set to a list of faces and those
 faces have been modified.
@@ -872,6 +868,7 @@ respectively."
                      (prism-modify-colors :num num
                                           :desaturations desaturations
                                           :lightens lightens
+                                          :opacities opacities
                                           :colors)
                      ;; Use only two digits per component.  HTML export of code (e.g. with Org
                      ;; Export, htmlize, etc.)  doesn't work well with colors like "#01234567890a",
@@ -900,6 +897,7 @@ respectively."
         (setf prism-colors colors
               prism-desaturations desaturations
               prism-lightens lightens
+              prism-opacities opacities
               prism-num-faces num
               prism-comments-fn comments-fn
               prism-strings-fn strings-fn
@@ -991,14 +989,14 @@ arguments to set the same faces."
              (symbol-function 'ignore)))
     ;; Avoid saving the file for each variable, which is very slow.
     ;; Save it once at the end.
-    (dolist (var (list 'prism-desaturations 'prism-lightens 'prism-num-faces
-                       'prism-comments-fn 'prism-strings-fn))
+    (dolist (var (list 'prism-desaturations 'prism-lightens 'prism-opacities 'prism-num-faces
+                       'prism-comments-fn 'prism-strings-fn 'prism-parens-fn))
       (customize-save-variable var (symbol-value var))))
   (customize-save-variable 'prism-colors prism-colors))
 
-(cl-defun prism-modify-colors (&key num colors desaturations lightens &allow-other-keys)
-  "Return list of NUM colors modified according to DESATURATIONS and LIGHTENS."
-  (cl-flet ((modify-color (color desaturate lighten)
+(cl-defun prism-modify-colors (&key num colors desaturations lightens opacities &allow-other-keys)
+  "Return list of NUM COLORS modified according to DESATURATIONS, LIGHTENS, and OPACITIES."
+  (cl-flet ((modify-color (color desaturate lighten opacify)
                           (--> color
                             (if (> desaturate 0)
                                 (color-desaturate-name it desaturate)
@@ -1006,19 +1004,25 @@ arguments to set the same faces."
                             (if (> lighten 0)
                                 (color-lighten-name it lighten)
                               it)
-                            ;; FIXME: It seems that these two functions called in sequence
+                            (if (> opacify 0)
+                                (prism-opacify-name it opacify)
+                              it)
+			    ;; FIXME: It seems that these two functions called in sequence
                             ;; always modify the color, e.g. #ff2afc becomes #fe29fb.
                             (color-name-to-rgb it)
                             (-let (((r g b) it))
-                              (color-rgb-to-hex r g b 2)))))
+			      (color-rgb-to-hex r g b 2)))))
     (when (< (length desaturations) num)
       (setf desaturations (prism-expand-list num desaturations)))
     (when (< (length lightens) num)
       (setf lightens (prism-expand-list num lightens)))
+    (when (< (length opacities) num)
+      (setf opacities (prism-expand-list num opacities)))
     (cl-loop for i from 0 below num
              for desaturate = (nth i desaturations)
              for lighten = (nth i lightens)
-             collect (modify-color (nth i colors) desaturate lighten))))
+             for opacify = (nth i opacities)
+             collect (modify-color (nth i colors) desaturate lighten opacify))))
 
 (defun prism-blend (a b alpha)
   "Return color A blended with color B by amount ALPHA."
@@ -1029,6 +1033,11 @@ arguments to set the same faces."
       (color-rgb-to-hex (blend ar br alpha)
                         (blend ag bg alpha)
                         (blend ab bb alpha)))))
+
+(defun prism-opacify-name (color percent)
+  "Return color A blended with the background by amount ALPHA."
+  (let ((alpha (/ percent 100.0)))
+    (prism-blend color (face-attribute 'default :background) alpha)))
 
 (defun prism-shuffle (seq)
   "Destructively shuffle SEQ.
@@ -1062,7 +1071,7 @@ necessary."
   (set-default option value)
   (when (--all? (and (boundp it) (symbol-value it))
                 '(prism-num-faces prism-color-attribute prism-desaturations
-                                  prism-lightens prism-comments-fn prism-strings-fn prism-colors))
+                                  prism-lightens prism-opacities prism-comments-fn prism-strings-fn prism-colors))
     ;; We can't call `prism-set-colors' until *all* relevant options
     ;; have been set.
     (prism-set-colors)))
@@ -1131,6 +1140,13 @@ it's extrapolated to the length of `prism-faces'."
   :type '(repeat number)
   :set #'prism-customize-set)
 
+(defcustom prism-opacities '(100 100 100)
+  "Default opacifying percentages applied to colors as depth increases.
+This need not be as long as the number of faces used, because
+it's extrapolated to the length of `prism-faces'."
+  :type '(repeat number)
+  :set #'prism-customize-set)
+
 (defcustom prism-comments t
   "Whether to colorize comments.
 Note that comments at depth 0 are not colorized, which preserves
@@ -1152,6 +1168,14 @@ Receives one argument, a color name or hex RGB string."
 (defcustom prism-strings-fn
   (lambda (color)
     (prism-blend color "white" 0.5))
+  "Function which adjusts colors for strings.
+Receives one argument, a color name or hex RGB string."
+  :type 'function
+  :set #'prism-customize-set)
+
+(defcustom prism-parens-fn
+  (lambda (color)
+    (prism-blend color (face-attribute 'default :background) 0.5))
   "Function which adjusts colors for strings.
 Receives one argument, a color name or hex RGB string."
   :type 'function
