@@ -1022,13 +1022,16 @@ arguments to set the same faces."
 
 (defun prism-blend (a b alpha)
   "Return color A blended with color B by amount ALPHA."
-  (cl-flet ((blend (a b alpha)
-                   (+ (* alpha a) (* b (- 1 alpha)))))
-    (-let* (((ar ag ab) (color-name-to-rgb a))
-            ((br bg bb) (color-name-to-rgb b)))
-      (color-rgb-to-hex (blend ar br alpha)
-                        (blend ag bg alpha)
-                        (blend ab bb alpha)))))
+  (if (some #'(lambda (color) (member color '(unspecified "unspecified-fg" "unspecified-bg")))
+            `(,a ,b))
+      nil
+    (cl-flet ((blend (a b alpha)
+                     (+ (* alpha a) (* b (- 1 alpha)))))
+      (-let* (((ar ag ab) (color-name-to-rgb a))
+              ((br bg bb) (color-name-to-rgb b)))
+        (color-rgb-to-hex (blend ar br alpha)
+                          (blend ag bg alpha)
+                          (blend ab bb alpha))))))
 
 (defun prism-shuffle (seq)
   "Destructively shuffle SEQ.
