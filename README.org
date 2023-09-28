@@ -218,7 +218,8 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 
 ** 0.3.3-pre
 
-Nothing new yet.
+*Fixes*
++ Infinite loop in ~prism-match~ when a double-prefixed comment appears next to a non-comment, non-whitespace character.  ([[https://github.com/alphapapa/prism.el/issues/26][#26]].  Thanks to [[https://github.com/danielneal][Daniel Neal]] for reporting.)
 
 ** 0.3.2
 
