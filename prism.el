@@ -398,7 +398,14 @@ Matches up to LIMIT."
                             (_ (if prism-faces-strings
                                    (alist-get depth prism-faces-strings)
                                  (alist-get depth prism-faces)))))
-                         (t (alist-get depth prism-faces)))))
+                         (t (alist-get depth prism-faces))))
+		(moved-point (&rest body)
+		  ;; Return point if BODY moves it, otherwise nil.
+		  (let ((pos/g (gensym "prism-match/moved-point-pos")))
+                    `(let ((,pos/g (point)))
+		       ,@body
+		       (when (/= ,pos/g (point))
+		         (point))))))
     (with-syntax-table prism-syntax-table
       (catch 'eobp
         (let ((parse-sexp-ignore-comments t)
@@ -455,9 +462,13 @@ Matches up to LIMIT."
                                (when (and prism-comments (comment-p))
                                  (when comment-or-string-start
                                    (goto-char comment-or-string-start))
-                                 (forward-comment (buffer-size))
-                                 (setf found-comment-p t)
-                                 (point))
+				 ;; `comment-p' checks two positions past point, which could
+				 ;; find a comment-start immediately after a non-comment
+				 ;; character (like `[{;; comment' in Clojure), so we must
+				 ;; check whether `forward-comment' actually moves point.
+                                 (when-let ((pos (moved-point (forward-comment (buffer-size)))))
+				   (setf found-comment-p t)
+                                   (point)))
                                (when (looking-at-p (rx (syntax string-quote)))
                                  (if in-string-p
                                      ;; At end of string: break out of it.
