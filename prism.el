@@ -360,45 +360,45 @@ For `font-lock-extend-region-functions'."
 Matches up to LIMIT."
   ;;  (prism-debug (current-buffer) (point) limit)
   (cl-macrolet ((parse-syntax ()
-                              `(-setq (depth _ _ in-string-p comment-level-p  _ _ _ comment-or-string-start)
-                                 (syntax-ppss)))
+                  `(-setq (depth _ _ in-string-p comment-level-p  _ _ _ comment-or-string-start)
+                     (syntax-ppss)))
                 (comment-p ()
-                           ;; This macro should only be used after `parse-syntax'.
-                           `(or comment-level-p (looking-at-p (rx (syntax comment-start)))
-                                ;; Not all language modes' syntax tables seem to allow searching
-                                ;; for comment-start, comment-end, or comment-delimiter
-                                ;; characters, so we must use ppss to determine whether we're
-                                ;; looking at a comment start.  And since some languages use
-                                ;; multiples of a character to mark a comment start (e.g. "//"),
-                                ;; we must also test at 2 characters past the point.  And since
-                                ;; that position could be past the end of the buffer, we must
-                                ;; ignore such an error.
-                                (condition-case nil
-                                    (or (save-excursion
-                                          (ppss-comment-depth (syntax-ppss (1+ (point)))))
-                                        (save-excursion
-                                          (ppss-comment-depth (syntax-ppss (+ 2 (point))))))
-                                  (args-out-of-range nil))))
+                  ;; This macro should only be used after `parse-syntax'.
+                  `(or comment-level-p (looking-at-p (rx (syntax comment-start)))
+                       ;; Not all language modes' syntax tables seem to allow searching
+                       ;; for comment-start, comment-end, or comment-delimiter
+                       ;; characters, so we must use ppss to determine whether we're
+                       ;; looking at a comment start.  And since some languages use
+                       ;; multiples of a character to mark a comment start (e.g. "//"),
+                       ;; we must also test at 2 characters past the point.  And since
+                       ;; that position could be past the end of the buffer, we must
+                       ;; ignore such an error.
+                       (condition-case nil
+                           (or (save-excursion
+                                 (ppss-comment-depth (syntax-ppss (1+ (point)))))
+                               (save-excursion
+                                 (ppss-comment-depth (syntax-ppss (+ 2 (point))))))
+                         (args-out-of-range nil))))
                 (looking-at-paren-p
-                 () `(looking-at-p (rx (or (syntax open-parenthesis)
-                                           (syntax close-parenthesis)))))
+                  () `(looking-at-p (rx (or (syntax open-parenthesis)
+                                            (syntax close-parenthesis)))))
                 (face-at ()
-                         ;; Return face to apply.  Should be called with point at `start'.
-                         `(cond ((and prism-parens (looking-at-paren-p))
-                                 (alist-get depth prism-faces-parens))
-                                ((comment-p)
-                                 (pcase depth
-                                   (0 'font-lock-comment-face)
-                                   (_ (if prism-faces-comments
-                                          (alist-get depth prism-faces-comments)
-                                        (alist-get depth prism-faces)))))
-                                ((or in-string-p (looking-at-p (rx (syntax string-quote))))
-                                 (pcase depth
-                                   (0 'font-lock-string-face)
-                                   (_ (if prism-faces-strings
-                                          (alist-get depth prism-faces-strings)
-                                        (alist-get depth prism-faces)))))
-                                (t (alist-get depth prism-faces)))))
+                  ;; Return face to apply.  Should be called with point at `start'.
+                  `(cond ((and prism-parens (looking-at-paren-p))
+                          (alist-get depth prism-faces-parens))
+                         ((comment-p)
+                          (pcase depth
+                            (0 'font-lock-comment-face)
+                            (_ (if prism-faces-comments
+                                   (alist-get depth prism-faces-comments)
+                                 (alist-get depth prism-faces)))))
+                         ((or in-string-p (looking-at-p (rx (syntax string-quote))))
+                          (pcase depth
+                            (0 'font-lock-string-face)
+                            (_ (if prism-faces-strings
+                                   (alist-get depth prism-faces-strings)
+                                 (alist-get depth prism-faces)))))
+                         (t (alist-get depth prism-faces)))))
     (with-syntax-table prism-syntax-table
       (catch 'eobp
         (let ((parse-sexp-ignore-comments t)
@@ -560,93 +560,93 @@ Matches up to LIMIT."
 Matches up to LIMIT.  Requires `prism-whitespace-indent-offset' be set
 appropriately, e.g. to `python-indent-offset' for `python-mode'."
   (cl-macrolet ((parse-syntax ()
-                              `(-setq (list-depth _ _ in-string-p comment-level-p _ _ _ comment-or-string-start)
-                                 (syntax-ppss)))
+                  `(-setq (list-depth _ _ in-string-p comment-level-p _ _ _ comment-or-string-start)
+                     (syntax-ppss)))
                 (indent-depth ()
-                              `(or (save-excursion
-                                     (forward-line -1)
-                                     (when (looking-at-p (rx (1+ nonl) "\\" eol))
-                                       ;; Found backslask-continued line: move
-                                       ;; to where the continued line starts.
-                                       (cl-loop do (forward-line -1)
-                                                while (looking-at-p (rx (1+ nonl) "\\" eol)))
-                                       (forward-line 1)  ; Yes, go back down a line.
-                                       (/ (current-indentation) prism-whitespace-indent-offset)))
-                                   (/ (current-indentation) prism-whitespace-indent-offset)))
+                  `(or (save-excursion
+                         (forward-line -1)
+                         (when (looking-at-p (rx (1+ nonl) "\\" eol))
+                           ;; Found backslask-continued line: move
+                           ;; to where the continued line starts.
+                           (cl-loop do (forward-line -1)
+                                    while (looking-at-p (rx (1+ nonl) "\\" eol)))
+                           (forward-line 1)  ; Yes, go back down a line.
+                           (/ (current-indentation) prism-whitespace-indent-offset)))
+                       (/ (current-indentation) prism-whitespace-indent-offset)))
                 (depth-at ()
-                          ;; Yes, this is entirely too complicated--just like Python's syntax in
-                          ;; comparison to Lisp.  But, "Eww, all those parentheses!"  they say.
-                          ;; Well, all those parentheses avoid lots of special cases like these.
-                          `(pcase list-depth
-                             (0 (cond ((looking-at-p (rx (syntax close-parenthesis) eol))
-                                       (save-excursion
-                                         (forward-char 1)
-                                         (backward-sexp 1)
-                                         (+ (nth 0 (syntax-ppss)) (indent-depth))))
-                                      ((looking-back (rx (syntax close-parenthesis)) (1- (point)))
-                                       (save-excursion
-                                         (backward-sexp 1)
-                                         (+ (nth 0 (syntax-ppss)) (indent-depth))))
-                                      (t (indent-depth))))
-                             ;; This handles the case of code that is both enclosed in a
-                             ;; character-delimited list and indented on a new line within that
-                             ;; list to match the list's opening indentation (e.g. in Python,
-                             ;; when an if's condition is parenthesized and split across lines).
-                             (_ (let* ((current-depth (car (syntax-ppss)))  ;; This `syntax-ppss' call *is* necessary!
-                                       (enclosing-list-depth
-                                        (pcase current-depth
-                                          (0 0)
-                                          (_ (save-excursion
-                                               ;; Escape current list and return the level of
-                                               ;; the enclosing list plus its indent depth.
+                  ;; Yes, this is entirely too complicated--just like Python's syntax in
+                  ;; comparison to Lisp.  But, "Eww, all those parentheses!"  they say.
+                  ;; Well, all those parentheses avoid lots of special cases like these.
+                  `(pcase list-depth
+                     (0 (cond ((looking-at-p (rx (syntax close-parenthesis) eol))
+                               (save-excursion
+                                 (forward-char 1)
+                                 (backward-sexp 1)
+                                 (+ (nth 0 (syntax-ppss)) (indent-depth))))
+                              ((looking-back (rx (syntax close-parenthesis)) (1- (point)))
+                               (save-excursion
+                                 (backward-sexp 1)
+                                 (+ (nth 0 (syntax-ppss)) (indent-depth))))
+                              (t (indent-depth))))
+                     ;; This handles the case of code that is both enclosed in a
+                     ;; character-delimited list and indented on a new line within that
+                     ;; list to match the list's opening indentation (e.g. in Python,
+                     ;; when an if's condition is parenthesized and split across lines).
+                     (_ (let* ((current-depth (car (syntax-ppss)))  ;; This `syntax-ppss' call *is* necessary!
+                               (enclosing-list-depth
+                                (pcase current-depth
+                                  (0 0)
+                                  (_ (save-excursion
+                                       ;; Escape current list and return the level of
+                                       ;; the enclosing list plus its indent depth.
 
-                                               ;; FIXME: When a preceding comment contains an apostrophe, this
-                                               ;; call to `scan-lists' interprets the apostrophe as delimiting a
-                                               ;; list, and it skips back to another preceding apostrophe, even
-                                               ;; inside a different top-level form, which causes the wrong
-                                               ;; depth to be calculated. ... Well, good news, I guess: this
-                                               ;; happens on Emacs 26.3 but not on Emacs 27.1.  I guess
-                                               ;; something was fixed, which means that it's not a bug in Prism.
-                                               (goto-char (scan-lists (point) -1 current-depth))
-                                               (+ (indent-depth) (car (syntax-ppss))))))))
-                                  (pcase enclosing-list-depth
-                                    (0 (+ list-depth (1- (indent-depth))))
-                                    (_  (+ enclosing-list-depth list-depth)))))))
+                                       ;; FIXME: When a preceding comment contains an apostrophe, this
+                                       ;; call to `scan-lists' interprets the apostrophe as delimiting a
+                                       ;; list, and it skips back to another preceding apostrophe, even
+                                       ;; inside a different top-level form, which causes the wrong
+                                       ;; depth to be calculated. ... Well, good news, I guess: this
+                                       ;; happens on Emacs 26.3 but not on Emacs 27.1.  I guess
+                                       ;; something was fixed, which means that it's not a bug in Prism.
+                                       (goto-char (scan-lists (point) -1 current-depth))
+                                       (+ (indent-depth) (car (syntax-ppss))))))))
+                          (pcase enclosing-list-depth
+                            (0 (+ list-depth (1- (indent-depth))))
+                            (_  (+ enclosing-list-depth list-depth)))))))
                 (comment-p ()
-                           ;; This macro should only be used after `parse-syntax'.
-                           `(or comment-level-p (looking-at-p (rx (or (syntax comment-start)
-                                                                      (syntax comment-delimiter))))
-                                ;; Not all language modes' syntax tables seem to allow searching
-                                ;; for comment-start, comment-end, or comment-delimiter
-                                ;; characters, so we must use ppss to determine whether we're
-                                ;; looking at a comment start.  And since some languages use
-                                ;; multiples of a character to mark a comment start (e.g. "//"),
-                                ;; we must also test at 2 characters past the point.  And since
-                                ;; that position could be past the end of the buffer, we must
-                                ;; ignore such an error.
-                                (condition-case nil
-                                    (or (save-excursion
-                                          (ppss-comment-depth (syntax-ppss (1+ (point)))))
-                                        (save-excursion
-                                          (ppss-comment-depth (syntax-ppss (+ 2 (point))))))
-                                  (args-out-of-range nil))))
+                  ;; This macro should only be used after `parse-syntax'.
+                  `(or comment-level-p (looking-at-p (rx (or (syntax comment-start)
+                                                             (syntax comment-delimiter))))
+                       ;; Not all language modes' syntax tables seem to allow searching
+                       ;; for comment-start, comment-end, or comment-delimiter
+                       ;; characters, so we must use ppss to determine whether we're
+                       ;; looking at a comment start.  And since some languages use
+                       ;; multiples of a character to mark a comment start (e.g. "//"),
+                       ;; we must also test at 2 characters past the point.  And since
+                       ;; that position could be past the end of the buffer, we must
+                       ;; ignore such an error.
+                       (condition-case nil
+                           (or (save-excursion
+                                 (ppss-comment-depth (syntax-ppss (1+ (point)))))
+                               (save-excursion
+                                 (ppss-comment-depth (syntax-ppss (+ 2 (point))))))
+                         (args-out-of-range nil))))
                 (face-at ()
-                         ;; Return face to apply.  Should be called with point at `start'.
-                         `(let ((depth (depth-at)))
-                            (cond ((comment-p)
-                                   (pcase depth
-                                     (0 'font-lock-comment-face)
-                                     (_ (if prism-faces-comments
-                                            (alist-get depth prism-faces-comments)
-                                          (alist-get depth prism-faces)))))
-                                  ((or in-string-p (looking-at-p (rx (or (syntax string-quote)
-                                                                         (syntax string-delimiter)))))
-                                   (pcase depth
-                                     (0 'font-lock-string-face)
-                                     (_ (if prism-faces-strings
-                                            (alist-get depth prism-faces-strings)
-                                          (alist-get depth prism-faces)))))
-                                  (t (alist-get depth prism-faces))))))
+                  ;; Return face to apply.  Should be called with point at `start'.
+                  `(let ((depth (depth-at)))
+                     (cond ((comment-p)
+                            (pcase depth
+                              (0 'font-lock-comment-face)
+                              (_ (if prism-faces-comments
+                                     (alist-get depth prism-faces-comments)
+                                   (alist-get depth prism-faces)))))
+                           ((or in-string-p (looking-at-p (rx (or (syntax string-quote)
+                                                                  (syntax string-delimiter)))))
+                            (pcase depth
+                              (0 'font-lock-string-face)
+                              (_ (if prism-faces-strings
+                                     (alist-get depth prism-faces-strings)
+                                   (alist-get depth prism-faces)))))
+                           (t (alist-get depth prism-faces))))))
     (with-syntax-table prism-syntax-table
       (unless (eobp)
         ;; Not at end-of-buffer: start matching.
@@ -767,11 +767,11 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
 Note a minor bug at the moment: anonymous faces are also
 removed."
   (cl-macrolet ((without-prism-faces (faces)
-                                     `(cl-loop for face in ,faces
-                                               ;; FIXME: This removes anonymous faces.
-                                               unless (or (not (facep face))
-                                                          (string-prefix-p "prism-level-" (symbol-name face)))
-                                               collect face)))
+                  `(cl-loop for face in ,faces
+                            ;; FIXME: This removes anonymous faces.
+                            unless (or (not (facep face))
+                                       (string-prefix-p "prism-level-" (symbol-name face)))
+                            collect face)))
     (with-silent-modifications
       (save-excursion
         (goto-char beg)
@@ -793,12 +793,12 @@ removed."
           (desaturations prism-desaturations) (lightens prism-lightens)
           (comments-fn (lambda (color)
                          (--> color
-                           (color-desaturate-name it 30)
-                           (color-lighten-name it -10))))
+                              (color-desaturate-name it 30)
+                              (color-lighten-name it -10))))
           (strings-fn (lambda (color)
                         (--> color
-                          (color-desaturate-name it 20)
-                          (color-lighten-name it 10))))
+                             (color-desaturate-name it 20)
+                             (color-lighten-name it 10))))
           (parens-fn (lambda (color)
                        (prism-blend color (face-attribute 'default :background) 0.5))))
   "Set `prism' faces.  Call after loading a new theme.
@@ -839,57 +839,57 @@ respectively."
   ;; MAYBE: Extrapolate desaturations and lightens cleverly, instead
   ;; of requiring the user to call `prism-extrapolate'.
   (cl-labels ((faces (colors &optional suffix (fn #'identity))
-                     (setf suffix (if suffix
-                                      (concat "-" suffix)
-                                    ""))
-                     (cl-loop for i from 0 below num
-                              for face = (intern (format "prism-level-%d%s" i suffix))
-                              for color = (funcall fn (nth i colors))
-                              for description = (format "`prism' face%s #%d" suffix i)
-                              do (set-face face attribute color description)
-                              collect (cons i face)))
+                (setf suffix (if suffix
+                                 (concat "-" suffix)
+                               ""))
+                (cl-loop for i from 0 below num
+                         for face = (intern (format "prism-level-%d%s" i suffix))
+                         for color = (funcall fn (nth i colors))
+                         for description = (format "`prism' face%s #%d" suffix i)
+                         do (set-face face attribute color description)
+                         collect (cons i face)))
               (set-face (face attribute color description)
-                        (pcase local
-                          ('nil
-                           (when (internal-lisp-face-p face)
-                             ;; Delete existing face, important if e.g. changing :foreground to :background.
-                             (face-spec-set face nil 'customized-face))
-                           (custom-declare-face face '((t)) description :group 'prism-faces)
-                           (set-face-attribute face nil attribute color))
-                          ('reset (reset-face face))
-                          (_ (face-remap-add-relative face (list attribute color)))))
+                (pcase local
+                  ('nil
+                   (when (internal-lisp-face-p face)
+                     ;; Delete existing face, important if e.g. changing :foreground to :background.
+                     (face-spec-set face nil 'customized-face))
+                   (custom-declare-face face '((t)) description :group 'prism-faces)
+                   (set-face-attribute face nil attribute color))
+                  ('reset (reset-face face))
+                  (_ (face-remap-add-relative face (list attribute color)))))
               (reset-face (face)
-                          (--when-let (alist-get face face-remapping-alist)
-                            (face-remap-remove-relative (cons (-last-item it) (car (butlast it)))))))
+                (--when-let (alist-get face face-remapping-alist)
+                  (face-remap-remove-relative (cons (-last-item it) (car (butlast it)))))))
     (let* ((colors (->> colors
-                     (--map (pcase-exhaustive it
-                              ((pred facep) (face-attribute it :foreground nil 'default))
-                              ((pred stringp) it)
-                              ((pred functionp) (funcall it))
-                              (`(themed ,color) (prism-theme-color color))))
-                     (--remove (string-prefix-p "unspecified-" it))
-                     -cycle
-                     (prism-modify-colors :num num
-                                          :desaturations desaturations
-                                          :lightens lightens
-                                          :colors)
-                     ;; Use only two digits per component.  HTML export of code (e.g. with Org
-                     ;; Export, htmlize, etc.)  doesn't work well with colors like "#01234567890a",
-                     ;; even if Emacs can handle them internally.  Maybe it's Web browsers that
-                     ;; can't handle them.  Anyway, we shouldn't use them if it breaks that.
-                     (--map (--> (color-name-to-rgb it)
-                              (-let (((r g b) it))
-                                (color-rgb-to-hex r g b 2)))))))
+                        (--map (pcase-exhaustive it
+                                 ((pred facep) (face-attribute it :foreground nil 'default))
+                                 ((pred stringp) it)
+                                 ((pred functionp) (funcall it))
+                                 (`(themed ,color) (prism-theme-color color))))
+                        (--remove (string-prefix-p "unspecified-" it))
+                        -cycle
+                        (prism-modify-colors :num num
+                                             :desaturations desaturations
+                                             :lightens lightens
+                                             :colors)
+                        ;; Use only two digits per component.  HTML export of code (e.g. with Org
+                        ;; Export, htmlize, etc.)  doesn't work well with colors like "#01234567890a",
+                        ;; even if Emacs can handle them internally.  Maybe it's Web browsers that
+                        ;; can't handle them.  Anyway, we shouldn't use them if it breaks that.
+                        (--map (--> (color-name-to-rgb it)
+                                    (-let (((r g b) it))
+                                      (color-rgb-to-hex r g b 2)))))))
       (cl-macrolet ((set-vars (&rest pairs)
-                              `(progn
-                                 ,@(cl-loop for (var val) on pairs by #'cddr
-                                            collect `(pcase local
-                                                       ('nil  ;; Set global faces.
-                                                        (set ',var ,val))
-                                                       ('reset  ;; Clear local remappings.
-                                                        ,val)
-                                                       (_  ;; Remap locally.
-                                                        (set (make-local-variable ',var) ,val)))))))
+                      `(progn
+                         ,@(cl-loop for (var val) on pairs by #'cddr
+                                    collect `(pcase local
+                                               ('nil  ;; Set global faces.
+                                                (set ',var ,val))
+                                               ('reset  ;; Clear local remappings.
+                                                ,val)
+                                               (_  ;; Remap locally.
+                                                (set (make-local-variable ',var) ,val)))))))
         (set-vars prism-faces (faces colors)
                   prism-faces-strings (faces colors "strings" strings-fn)
                   prism-faces-comments (faces colors "comments" comments-fn)
@@ -913,41 +913,41 @@ a universal prefix (to use all `font-lock' faces), or nil (to use
 unique colors from `font-lock' faces)."
   (interactive "P")
   (cl-labels ((colorize  ;; Return color NAME propertized with its foreground as its color.
-	       (name) (propertize name 'face (list :foreground name)))
+	        (name) (propertize name 'face (list :foreground name)))
               (faces  ;; Return list of used colors with foreground color face applied.
-	       () (->> (face-list)
-                    (--select (and (string-prefix-p "prism-level" (symbol-name it))
-                                   (string-match-p (rx digit eos) (symbol-name it))))
-                    nreverse (-map #'face-foreground) (-map #'colorize)))
+	        () (->> (face-list)
+                        (--select (and (string-prefix-p "prism-level" (symbol-name it))
+                                       (string-match-p (rx digit eos) (symbol-name it))))
+                        nreverse (-map #'face-foreground) (-map #'colorize)))
               (select-colors (colors threshold)
-                             ;; Return shuffled list of COLORS ensuring that the
-                             ;; distance between each one meets THRESHOLD.
-                             (cl-loop with selected = (list (pop colors))
-                                      while colors
-                                      do (setf colors (prism-shuffle colors))
-                                      for index = (--find-index
-                                                   (>= (color-distance (car selected) it)
-                                                       threshold)
-                                                   colors)
-                                      while index
-                                      do (progn
-                                           (push (nth index colors) selected)
-                                           (setf colors (-remove-at index colors)))
-                                      finally return selected))
+                ;; Return shuffled list of COLORS ensuring that the
+                ;; distance between each one meets THRESHOLD.
+                (cl-loop with selected = (list (pop colors))
+                         while colors
+                         do (setf colors (prism-shuffle colors))
+                         for index = (--find-index
+                                      (>= (color-distance (car selected) it)
+                                          threshold)
+                                      colors)
+                         while index
+                         do (progn
+                              (push (nth index colors) selected)
+                              (setf colors (-remove-at index colors)))
+                         finally return selected))
 	      (background-contrast-p (color &optional (min-distance 32768))
-				     (>= (color-distance color (face-attribute 'default :background))
-					 min-distance))
+		(>= (color-distance color (face-attribute 'default :background))
+		    min-distance))
               (option-customized-p
-	       (option) (not (equal (pcase-exhaustive (get option 'standard-value)
-				      (`((funcall (function ,fn))) (funcall fn)))
-				    (symbol-value option)))))
+	        (option) (not (equal (pcase-exhaustive (get option 'standard-value)
+				       (`((funcall (function ,fn))) (funcall fn)))
+				     (symbol-value option)))))
     (let* ((faces (--select (string-prefix-p "font-lock-" (symbol-name it))
                             (face-list)))
            (colors (->> faces
-                     (--map (face-attribute it :foreground))
-                     (--remove (eq 'unspecified it))
-                     (-remove #'color-gray-p)
-                     (-select #'background-contrast-p)))
+                        (--map (face-attribute it :foreground))
+                        (--remove (eq 'unspecified it))
+                        (-remove #'color-gray-p)
+                        (-select #'background-contrast-p)))
 	   (colors (pcase arg
 		     ((pred integerp) (-take arg (prism-shuffle (-uniq colors))))
 		     ('(4) colors)
@@ -969,10 +969,10 @@ unique colors from `font-lock' faces)."
                          prism-comments-fn
                        (lambda (color)
                          (--> color
-                           ;; The default function desaturates by 30%, but 40%
-                           ;; seems to help a bit when using random colors.
-                           (color-desaturate-name it 40)
-                           (color-lighten-name it -10)))))
+                              ;; The default function desaturates by 30%, but 40%
+                              ;; seems to help a bit when using random colors.
+                              (color-desaturate-name it 40)
+                              (color-lighten-name it -10)))))
       (message "Randomized%s colors: %s\nFaces: %s"
                (pcase arg
 		 ('(4) "")
@@ -999,18 +999,18 @@ arguments to set the same faces."
 (cl-defun prism-modify-colors (&key num colors desaturations lightens &allow-other-keys)
   "Return list of NUM colors modified according to DESATURATIONS and LIGHTENS."
   (cl-flet ((modify-color (color desaturate lighten)
-                          (--> color
-                            (if (> desaturate 0)
-                                (color-desaturate-name it desaturate)
-                              it)
-                            (if (> lighten 0)
-                                (color-lighten-name it lighten)
-                              it)
-                            ;; FIXME: It seems that these two functions called in sequence
-                            ;; always modify the color, e.g. #ff2afc becomes #fe29fb.
-                            (color-name-to-rgb it)
-                            (-let (((r g b) it))
-                              (color-rgb-to-hex r g b 2)))))
+              (--> color
+                   (if (> desaturate 0)
+                       (color-desaturate-name it desaturate)
+                     it)
+                   (if (> lighten 0)
+                       (color-lighten-name it lighten)
+                     it)
+                   ;; FIXME: It seems that these two functions called in sequence
+                   ;; always modify the color, e.g. #ff2afc becomes #fe29fb.
+                   (color-name-to-rgb it)
+                   (-let (((r g b) it))
+                     (color-rgb-to-hex r g b 2)))))
     (when (< (length desaturations) num)
       (setf desaturations (prism-expand-list num desaturations)))
     (when (< (length lightens) num)
@@ -1023,7 +1023,7 @@ arguments to set the same faces."
 (defun prism-blend (a b alpha)
   "Return color A blended with color B by amount ALPHA."
   (cl-flet ((blend (a b alpha)
-                   (+ (* alpha a) (* b (- 1 alpha)))))
+              (+ (* alpha a) (* b (- 1 alpha)))))
     (-let* (((ar ag ab) (color-name-to-rgb a))
             ((br bg bb) (color-name-to-rgb b)))
       (color-rgb-to-hex (blend ar br alpha)
@@ -1051,8 +1051,8 @@ necessary."
                                    (1- length))))
          (final-element-p (not (zerop (mod new-length length))))
          (new-list (->> list
-                     (--map (-repeat repeat-n it))
-                     (-flatten))))
+                        (--map (-repeat repeat-n it))
+                        (-flatten))))
     (if final-element-p
         (-snoc new-list (-last-item list))
       new-list)))
