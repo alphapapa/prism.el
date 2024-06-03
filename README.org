@@ -218,7 +218,8 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 
 ** 0.3.3-pre
 
-Nothing new yet.
+*Compatibility*
++ Depend on Emacs 27.1 or later.  (This was actually needed since v0.3.2, but was overlooked then.)
 
 ** 0.3.2
 
