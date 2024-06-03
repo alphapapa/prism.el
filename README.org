@@ -221,6 +221,9 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 *Compatibility*
 + Depend on Emacs 27.1 or later.  (This was actually needed since v0.3.2, but was overlooked then.)
 
+*Fixes*
++ Infinite loop in ~prism-match~ when a double-prefixed comment appears next to a non-comment, non-whitespace character.  ([[https://github.com/alphapapa/prism.el/issues/26][#26]].  Thanks to [[https://github.com/danielneal][Daniel Neal]] for reporting.)
+
 ** 0.3.2
 
 *Fixed*
