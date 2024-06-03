@@ -111,10 +111,10 @@
   "Alist mapping depth levels to string faces.")
 
 (defvar prism-faces-parens nil
-  "Alist mapping depth levels to parens faces.")
+  "Alist mapping depth levels to parentheses' faces.")
 
 (defvar prism-face nil
-  "Set by `prism-match' during fontification.")
+  "Set by `prism-match' while applying faces.")
 
 (defvar-local prism-syntax-table nil
   "Syntax table used by `prism-mode'.
@@ -357,7 +357,7 @@ For `font-lock-extend-region-functions'."
     table))
 
 (defun prism-match (limit)
-  "Matcher function for `font-lock-keywords'.
+  "Match function for `font-lock-keywords'.
 Matches up to LIMIT."
   ;;  (prism-debug (current-buffer) (point) limit)
   (cl-macrolet ((parse-syntax ()
@@ -568,7 +568,7 @@ Matches up to LIMIT."
             t))))))
 
 (defun prism-match-whitespace (limit)
-  "Matcher function for `font-lock-keywords' in whitespace-sensitive buffers.
+  "Match function for `font-lock-keywords' in whitespace-sensitive buffers.
 Matches up to LIMIT.  Requires `prism-whitespace-indent-offset' be set
 appropriately, e.g. to `python-indent-offset' for `python-mode'."
   (cl-macrolet ((parse-syntax ()
@@ -775,7 +775,7 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
             t))))))
 
 (cl-defun prism-remove-faces (&optional (beg (point-min)))
-  "Remove `prism' faces from buffer.
+  "Remove `prism' faces from buffer starting at BEG.
 Note a minor bug at the moment: anonymous faces are also
 removed."
   (cl-macrolet ((without-prism-faces (faces)
@@ -823,6 +823,8 @@ for.
 When SAVE is non-nil, save attributes to `prism-' customization
 options for future use by default.
 
+If SHUFFLE, the order of the colors is shuffled.
+
 When LOCAL is t (interactively, with one universal prefix), remap
 faces buffer-locally; when `reset' (interactively, with two
 prefixes), clear local remapping and don't set any faces; when
@@ -838,8 +840,8 @@ NUM, because they are extrapolated automatically.
 
 COMMENTS-FN, PARENS-FN, and STRINGS-FN are functions of one
 argument, a color name or hex RGB string, which return the color
-having been modified as desired for comments, parens, or strings,
-respectively."
+having been modified as desired for comments, parentheses, or
+strings, respectively."
   (declare (indent defun))
   (interactive)
   (when (called-interactively-p 'any)
@@ -1012,7 +1014,7 @@ arguments to set the same faces."
   (customize-save-variable 'prism-colors prism-colors))
 
 (cl-defun prism-modify-colors (&key num colors desaturations lightens &allow-other-keys)
-  "Return list of NUM colors modified according to DESATURATIONS and LIGHTENS."
+  "Return list of NUM COLORS modified according to DESATURATIONS and LIGHTENS."
   (cl-flet ((modify-color (color desaturate lighten)
               (--> color
                    (if (> desaturate 0)
@@ -1126,7 +1128,7 @@ Assumes the first `doom' or `solarized' theme found in
 ;; which is defined above.
 
 (defgroup prism nil
-  "Disperse lisp forms into a spectrum of colors according to depth."
+  "Disperse Lisp forms into a spectrum of colors according to depth."
   :group 'font-lock
   :link '(url-link "https://github.com/alphapapa/prism.el"))
 
@@ -1142,7 +1144,7 @@ Assumes the first `doom' or `solarized' theme found in
   :set #'prism-customize-set)
 
 (defcustom prism-desaturations '(40 50 60)
-  "Default desaturation percentages applied to colors as depth increases.
+  "Default de-saturation percentages applied to colors as depth increases.
 This need not be as long as the number of faces used, because
 it's extrapolated to the length of `prism-faces'."
   :type '(repeat number)
@@ -1170,7 +1172,7 @@ Receives one argument, a color name or hex RGB string."
   :set #'prism-customize-set)
 
 (defcustom prism-strings t
-  "Whether to fontify strings."
+  "Whether to colorize strings."
   :type 'boolean)
 
 (defcustom prism-strings-fn
@@ -1182,11 +1184,12 @@ Receives one argument, a color name or hex RGB string."
   :set #'prism-customize-set)
 
 (defcustom prism-parens nil
-  "Whether to colorize parens separately.
-When disabled, parens are colorized with the same face as the
-other elements at their depth.  When enabled, parens may be
-colorized distinctly, e.g. to make them fade away or stand out.
-See the PARENS-FN argument to the `prism-set-colors' function."
+  "Whether to colorize parentheses separately.
+When disabled, parentheses are colorized with the same face as
+the other elements at their depth.  When enabled, parentheses may
+be colorized distinctly, e.g. to make them fade away or stand
+out.  See the PARENS-FN argument to the `prism-set-colors'
+function."
   :type 'boolean
   :set #'prism-customize-set)
 
