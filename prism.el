@@ -861,13 +861,16 @@ respectively."
               (reset-face (face)
                 (--when-let (alist-get face face-remapping-alist)
                   (face-remap-remove-relative (cons (-last-item it) (car (butlast it)))))))
-    (let* ((colors (->> colors
+    (let* ((orig-colors colors)
+           (colors (->> colors
                         (--map (pcase-exhaustive it
                                  ((pred facep) (face-attribute it :foreground nil 'default))
                                  ((pred stringp) it)
                                  ((pred functionp) (funcall it))
                                  (`(themed ,color) (prism-theme-color color))))
-                        (--remove (string-prefix-p "unspecified-" it))
+                        (--remove (string-prefix-p "unspecified-" it))))
+           (_ (cl-assert colors nil "No non-unspecified colors remain of %s" orig-colors))
+           (colors (->> colors
                         -cycle
                         (prism-modify-colors :num num
                                              :desaturations desaturations
@@ -1060,9 +1063,19 @@ necessary."
 (defun prism-customize-set (option value)
   "Set OPTION to VALUE, and call `prism-set-colors' when possible."
   (set-default option value)
-  (when (--all? (and (boundp it) (symbol-value it))
-                '(prism-num-faces prism-color-attribute prism-desaturations
-                                  prism-lightens prism-comments-fn prism-strings-fn prism-colors))
+  (when (and (--all? (and (boundp it) (symbol-value it))
+                     '( prism-num-faces prism-color-attribute prism-desaturations
+                        prism-lightens prism-comments-fn prism-strings-fn prism-colors))
+             (->> value
+                  ;; Ensure some values with specified colors are present (when
+                  ;; linting indentation, it seems that the font-lock faces
+                  ;; aren't fully loaded somehow, which causes a useless error).
+                  (--map (pcase-exhaustive it
+                           ((pred facep) (face-attribute it :foreground nil 'default))
+                           ((pred stringp) it)
+                           ((pred functionp) (funcall it))
+                           (`(themed ,color) (prism-theme-color color))))
+                  (--remove (string-prefix-p "unspecified-" it))))
     ;; We can't call `prism-set-colors' until *all* relevant options
     ;; have been set.
     (prism-set-colors)))
