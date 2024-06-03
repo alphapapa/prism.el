@@ -216,7 +216,7 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 :TOC:      0
 :END:
 
-** 0.3.3-pre
+** 0.3.3
 
 *Compatibility*
 + Depend on Emacs 27.1 or later.  (This was actually needed since v0.3.2, but was overlooked then.)
