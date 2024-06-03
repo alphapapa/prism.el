@@ -223,6 +223,7 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 
 *Fixes*
 + Infinite loop in ~prism-match~ when a double-prefixed comment appears next to a non-comment, non-whitespace character.  ([[https://github.com/alphapapa/prism.el/issues/26][#26]].  Thanks to [[https://github.com/danielneal][Daniel Neal]] for reporting.)
++ Call ~face-attribute~ with its ~inherit~ argument specified as ~default~.  (Fixes [[https://github.com/alphapapa/prism.el/issues/22][#22]].  Thanks to [[https://github.com/bram85][Bram Schoenmakers]] for reporting.)
 
 ** 0.3.2
 
