@@ -1089,8 +1089,7 @@ Assumes the first `doom' or `solarized' theme found in
              ;; Yes, `eval' is evil, but for some reason I can't figure out,
              ;; it's the only way this works here.  In a test function,
              ;; `symbol-value' worked fine, but not here.  Go figure.
-             (eval `(solarized-with-color-variables ',variant
-                      ,color))))
+             (eval `(solarized-with-color-variables ',variant ,color))))
           ((rx bos "doom-")
            (or (doom-color (intern color))
                color)))
