@@ -923,11 +923,8 @@ strings, respectively."
               prism-parens-fn parens-fn)
         (prism-save-colors)))))
 
-(defun prism-randomize-colors (&optional arg)
-  "Randomize `prism' colors using themed `font-lock' faces.
-ARG may be a number (which limits the number of colors used), or
-a universal prefix (to use all `font-lock' faces), or nil (to use
-unique colors from `font-lock' faces)."
+(defun prism-randomize-colors (&optional limit)
+  "Randomize `prism' colors using no more than LIMIT `font-lock' faces."
   (interactive "P")
   (cl-labels ((colorize  ;; Return color NAME propertized with its foreground as its color.
 	        (name) (propertize name 'face (list :foreground name)))
@@ -936,20 +933,29 @@ unique colors from `font-lock' faces)."
                         (--select (and (string-prefix-p "prism-level" (symbol-name it))
                                        (string-match-p (rx digit eos) (symbol-name it))))
                         nreverse (-map #'face-foreground) (-map #'colorize)))
-              (select-colors (colors threshold)
-                ;; Return shuffled list of COLORS ensuring that the
-                ;; distance between each one meets THRESHOLD.
+              (select-colors (colors threshold &optional limit)
+                "Return shuffled list of NUM COLORS.
+Ensures that the distance between each one meets THRESHOLD."
+                ;; First, take the unique colors and shuffle them.
+                (setf colors (prism-shuffle (-uniq colors)))
+                ;; Second, select the first of those colors.
                 (cl-loop with selected = (list (pop colors))
+                         ;; Until we reach the desired length, if any...
+                         while (or (not limit) (< (length selected) limit))
+                         ;; While we still have colors to choose from...
                          while colors
-                         do (setf colors (prism-shuffle colors))
-                         for index = (--find-index
-                                      (>= (color-distance (car selected) it)
-                                          threshold)
-                                      colors)
-                         while index
-                         do (progn
-                              (push (nth index colors) selected)
-                              (setf colors (-remove-at index colors)))
+                         ;; Find a color that meets the distance threshold.
+                         for new-color = (--first (>= (color-distance (car selected) it)
+                                                      threshold)
+                                                  colors)
+                         ;; If we have one...
+                         while new-color
+                         do (if (member new-color selected)
+                                ;; Color already on list: don't consider it
+                                ;; again (protecting against infinite loops).
+                                (cl-callf2 remove new-color colors)
+                              ;; Color not already on list: select it.
+                              (push new-color selected))
                          finally return selected))
 	      (background-contrast-p (color &optional (min-distance 32768))
 		(>= (color-distance color (face-attribute 'default :background nil 'default))
@@ -964,13 +970,9 @@ unique colors from `font-lock' faces)."
                         (--map (face-attribute it :foreground nil 'default))
                         (--remove (eq 'unspecified it))
                         (-remove #'color-gray-p)
-                        (-select #'background-contrast-p)))
-	   (colors (pcase arg
-		     ((pred integerp) (-take arg (prism-shuffle (-uniq colors))))
-		     ('(4) colors)
-		     (_ (-uniq colors))))
-	   (colors (select-colors colors prism-color-distance))
-	   (colors (-rotate (random (length colors)) colors))
+                        (-select #'background-contrast-p)
+                        -uniq))
+	   (colors (select-colors colors prism-color-distance limit))
            (desaturations (if (option-customized-p 'prism-desaturations)
                               prism-desaturations
                             (prism-extrapolate 0 prism-num-faces (length colors)
@@ -990,10 +992,7 @@ unique colors from `font-lock' faces)."
                               ;; seems to help a bit when using random colors.
                               (color-desaturate-name it 40)
                               (color-lighten-name it -10)))))
-      (message "Randomized%s colors: %s\nFaces: %s"
-               (pcase arg
-		 ('(4) "")
-		 (_ ", unique"))
+      (message "Randomized colors: %s\nFaces: %s"
                (string-join (-map #'colorize colors) " ")
                (string-join (faces) " ")))))
 
