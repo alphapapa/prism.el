@@ -380,9 +380,9 @@ Matches up to LIMIT."
                                (save-excursion
                                  (ppss-comment-depth (syntax-ppss (+ 2 (point))))))
                          (args-out-of-range nil))))
-                (looking-at-paren-p
-                  () `(looking-at-p (rx (or (syntax open-parenthesis)
-                                            (syntax close-parenthesis)))))
+                (looking-at-paren-p ()
+                  `(looking-at-p (rx (or (syntax open-parenthesis)
+                                         (syntax close-parenthesis)))))
                 (face-at ()
                   ;; Return face to apply.  Should be called with point at `start'.
                   `(cond ((and prism-parens (looking-at-paren-p))
@@ -926,13 +926,15 @@ strings, respectively."
 (defun prism-randomize-colors (&optional limit)
   "Randomize `prism' colors using no more than LIMIT `font-lock' faces."
   (interactive "P")
-  (cl-labels ((colorize  ;; Return color NAME propertized with its foreground as its color.
-	        (name) (propertize name 'face (list :foreground name)))
-              (faces  ;; Return list of used colors with foreground color face applied.
-	        () (->> (face-list)
-                        (--select (and (string-prefix-p "prism-level" (symbol-name it))
-                                       (string-match-p (rx digit eos) (symbol-name it))))
-                        nreverse (-map #'face-foreground) (-map #'colorize)))
+  (cl-labels ((colorize (name)
+                "Return color NAME propertized with its foreground as its color."
+                (propertize name 'face (list :foreground name)))
+              (prism-faces-propertized ()
+                "Return list of used colors with foreground color face applied."
+                (->> (face-list)
+                     (--select (and (string-prefix-p "prism-level" (symbol-name it))
+                                    (string-match-p (rx digit eos) (symbol-name it))))
+                     nreverse (-map #'face-foreground) (-map #'colorize)))
               (select-colors (colors threshold &optional limit)
                 "Return shuffled list of NUM COLORS.
 Ensures that the distance between each one meets THRESHOLD."
@@ -960,10 +962,10 @@ Ensures that the distance between each one meets THRESHOLD."
 	      (background-contrast-p (color &optional (min-distance 32768))
 		(>= (color-distance color (face-attribute 'default :background nil 'default))
 		    min-distance))
-              (option-customized-p
-	        (option) (not (equal (pcase-exhaustive (get option 'standard-value)
-				       (`((funcall (function ,fn))) (funcall fn)))
-				     (symbol-value option)))))
+              (option-customized-p (option)
+                (not (equal (pcase-exhaustive (get option 'standard-value)
+			      (`((funcall (function ,fn))) (funcall fn)))
+			    (symbol-value option)))))
     (let* ((faces (--select (string-prefix-p "font-lock-" (symbol-name it))
                             (face-list)))
            (colors (->> faces
@@ -994,7 +996,7 @@ Ensures that the distance between each one meets THRESHOLD."
                               (color-lighten-name it -10)))))
       (message "Randomized colors: %s\nFaces: %s"
                (string-join (-map #'colorize colors) " ")
-               (string-join (faces) " ")))))
+               (string-join (prism-faces-propertized) " ")))))
 
 (defun prism-save-colors ()
   "Save current `prism' colors.
