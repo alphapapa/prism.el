@@ -218,7 +218,8 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 
 ** 0.3.4-pre
 
-Nothing new yet.
+*Fixes*
++ Customization setter could fail at load time.
 
 ** 0.3.3
 
