@@ -216,6 +216,10 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 :TOC:      0
 :END:
 
+** 0.3.4-pre
+
+Nothing new yet.
+
 ** 0.3.3
 
 *Compatibility*
