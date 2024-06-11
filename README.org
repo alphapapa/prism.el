@@ -216,6 +216,11 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 :TOC:      0
 :END:
 
+** 0.3.5
+
+*Fixes*
++ Further fix to customization setter.
+
 ** 0.3.4
 
 *Fixes*
