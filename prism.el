@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/prism.el
-;; Version: 0.3.4
+;; Version: 0.3.5-pre
 ;; Package-Requires: ((emacs "27.1") (compat "29.1.4.5") (dash "2.14.1"))
 ;; Keywords: faces lisp
 
