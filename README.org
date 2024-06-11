@@ -218,7 +218,8 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 
 ** 0.3.5-pre
 
-Nothing new yet.
+*Fixes*
++ Further fix to customization setter.
 
 ** 0.3.4
 
