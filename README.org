@@ -218,6 +218,9 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 
 ** 0.4-pre
 
+*Additions*
++ Option ~prism-whitespace-mode-indents~ includes a default for ~yaml-mode~ buffers.
+
 *Changes*
 + Command ~prism-randomize-colors~ more consistently produces the desired number of colors.  (However, it is still limited by the element of chance and the available faces; it may take several iterations to find a pleasing set of colors in a given circumstance.)
 

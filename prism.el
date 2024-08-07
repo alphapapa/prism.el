@@ -1220,9 +1220,10 @@ See `color-distance'."
   :group 'prism)
 
 (defcustom prism-whitespace-mode-indents
-  (list (cons 'python-mode 'python-indent-offset)
-        (cons 'haskell-mode 'haskell-indentation-left-offset)
-        (cons t 4))
+  '((python-mode . python-indent-offset)
+    (haskell-mode . haskell-indentation-left-offset)
+    (yaml-mode . yaml-indent-offset)
+    (t . 4))
   "Alist mapping major modes to indentation offsets for `prism-whitespace-mode'.
 Each key should be a major mode function symbol, and the value
 either a variable whose value to use or an integer number of
