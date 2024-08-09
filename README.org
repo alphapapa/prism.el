@@ -142,6 +142,10 @@ You can shuffle the order of the colors until you find a pattern you like:
 
 [[images/shuffled.png]]
 
+If you use [[https://github.com/catppuccin/emacs][Catppuccin]], you can use =catppuccin-get-color= to get colors from the theme:
+
+[[images/catppuccin-mocha.png]]
+
 ** Buffer-local themes
 
 You can even set themes buffer-locally (the theme-choosing command shown here is not included, but you can easily define your own "chooser" command using [[https://github.com/alphapapa/unpackaged.el#define-a-chooser-command][unpackaged/define-chooser]]):
