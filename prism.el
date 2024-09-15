@@ -508,9 +508,12 @@ Matches up to LIMIT."
                                (save-excursion
                                  (when (re-search-forward (rx (or (syntax string-quote)
                                                                   (syntax comment-start)))
-                                                          (or (ignore-errors
-                                                                (scan-lists (point) 1 1))
-                                                              limit)
+                                                          ;; FIXME: Point may have moved past
+                                                          ;; limit.  This is a workaround.
+                                                          (max (or (ignore-errors
+                                                                     (scan-lists (point) 1 1))
+                                                                   limit)
+                                                               (point))
                                                           t)
                                    ;; Found string or comment in current list: stop at beginning of it.
                                    (pcase (syntax-after (match-beginning 0))

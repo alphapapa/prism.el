@@ -224,6 +224,9 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 *Changes*
 + Command ~prism-randomize-colors~ more consistently produces the desired number of colors.  (However, it is still limited by the element of chance and the available faces; it may take several iterations to find a pleasing set of colors in a given circumstance.)
 
+*Fixes*
++ "Invalid search bound (wrong side of point)" error.  ([[https://github.com/alphapapa/prism.el/issues/27][#27]].  Thanks to [[https://github.com/disconsis][Ketan Kanishka]] for reporting.)
+
 ** 0.3.5
 
 *Fixes*
