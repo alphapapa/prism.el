@@ -226,6 +226,7 @@ Here's an example that the author finds pleasant (seen in the first screenshot):
 
 *Fixes*
 + "Invalid search bound (wrong side of point)" error.  ([[https://github.com/alphapapa/prism.el/issues/27][#27]].  Thanks to [[https://github.com/disconsis][Ketan Kanishka]] for reporting.)
++ Face applied within sequences at top-level indentation in ~prism-whitespace-mode~ (e.g. in Python, the arguments in a top-level function definition).
 
 ** 0.3.5
 
