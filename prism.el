@@ -625,7 +625,7 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                                        (goto-char (scan-lists (point) -1 current-depth))
                                        (+ (indent-depth) (car (syntax-ppss))))))))
                           (pcase enclosing-list-depth
-                            (0 (+ list-depth (indent-depth)))
+                            (0 list-depth)
                             (_  (+ enclosing-list-depth list-depth)))))))
                 (comment-p ()
                   ;; This macro should only be used after `parse-syntax'.
